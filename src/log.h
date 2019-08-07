@@ -55,7 +55,8 @@ private:
 		if(level_ <= level)
 		{
 			std::cout << prefix(level);
-			((std::cout << args << " "), ...) << std::endl;
+			// ((std::cout << args << " "), ...) << std::endl;
+			(std::cout << ... << args) << std::endl;
 		}
 	}
 };
