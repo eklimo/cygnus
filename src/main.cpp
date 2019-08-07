@@ -2,7 +2,6 @@
 #include <vector>
 #include <string>
 
-#include "log.h"
 #include "cli.h"
 
 int main(int argc, char *argv[])
