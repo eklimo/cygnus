@@ -6,11 +6,11 @@ namespace CLI
 {
 	struct Options
 	{
-		std::vector<std::string> inputs;
+		std::vector<std::string_view> inputs;
 		bool debug;
 	};
 
-	Options parse_options(const std::vector<std::string> &args)
+	Options parse_options(const std::vector<std::string_view> &args)
 	{
 		Options options =
 		{
@@ -28,7 +28,7 @@ namespace CLI
 				}
 				else
 				{
-					Logger::get().warn("Invalid option '" + arg + "'");
+					Logger::get().warn("Invalid option '", arg.data(), "'");
 				}
 			}
 			else
@@ -40,7 +40,7 @@ namespace CLI
 		return options;
 	}
 
-	int execute(const std::vector<std::string> &args)
+	int execute(const std::vector<std::string_view> &args)
 	{
 		auto options = parse_options(args);
 
@@ -58,7 +58,7 @@ namespace CLI
 
 		for(const auto &input : options.inputs)
 		{
-			Logger::get().debug("Input file: '" + input + "'");
+			Logger::get().debug("Input file: '", input, "'");
 		}
 
 		return 0;
