@@ -1,6 +1,10 @@
 #include "cli.h"
 
+#include <fstream>
+
 #include "log.h"
+#include "compiler.h"
+#include "util.h"
 
 namespace CLI
 {
@@ -28,7 +32,7 @@ namespace CLI
 				}
 				else
 				{
-					Logger::get().warn("Invalid option '", arg.data(), "'");
+					Logger::get().warn("Invalid option '", arg, "'");
 				}
 			}
 			else
@@ -40,15 +44,9 @@ namespace CLI
 		return options;
 	}
 
-	int execute(const std::vector<std::string_view> &args)
+	void execute(const std::vector<std::string_view> &args)
 	{
 		auto options = parse_options(args);
-
-		if(options.inputs.empty())
-		{
-			Logger::get().error("No inputs given");
-			std::exit(0);
-		}
 
 		if(options.debug)
 		{
@@ -56,11 +54,21 @@ namespace CLI
 			Logger::get().info("Enabled debug logging");
 		}
 
-		for(const auto &input : options.inputs)
+		if(options.inputs.empty())
 		{
-			Logger::get().debug("Input file: '", input, "'");
+			Logger::get().error("No inputs given");
+			std::exit(0);
 		}
 
-		return 0;
+		for(const auto &input : options.inputs)
+		{
+			try
+			{
+				std::string source = Util::read_file(input);
+				Logger::get().info("Compiling file '", input, "'");
+				Compiler::compile(input, source);
+			}
+			catch(std::ifstream::failure &e) {}
+		}
 	}
 }

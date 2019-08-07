@@ -45,8 +45,9 @@ private:
 				return "\033[1;33m[warning]\033[0m ";
 			case ERROR:
 				return "\033[1;31m[error]\033[0m ";
+			default:
+				return "";
 		}
-		return "";
 	}
 
 	template<typename... Args>
