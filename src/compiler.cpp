@@ -43,7 +43,7 @@ namespace Compiler
 			Logger::get().error(e.what());
 			std::exit(0);
 		}
-		Util::PrintVisitor printer;
+		Util::PrintVisitor printer(true);
 		Logger::get().debug("AST:");
 		ast->accept(printer);
 	}

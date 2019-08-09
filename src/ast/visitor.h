@@ -7,6 +7,7 @@ struct NumberLiteral;
 struct StringLiteral;
 struct BooleanLiteral;
 struct Identifier;
+struct FunctionCall;
 
 struct InfixOperator;
 struct PrefixOperator;
@@ -21,6 +22,7 @@ public:
 	virtual void visit(StringLiteral &node) = 0;
 	virtual void visit(BooleanLiteral &node) = 0;
 	virtual void visit(Identifier &node) = 0;
+	virtual void visit(FunctionCall &node) = 0;
 
 	virtual void visit(InfixOperator &node) = 0;
 	virtual void visit(PrefixOperator &node) = 0;

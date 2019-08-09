@@ -2,6 +2,10 @@
 
 namespace Util
 {
+	PrintVisitor::PrintVisitor(bool verbose)
+		: str(verbose)
+	{}
+
 	const std::string PrintVisitor::prefix_tab() const
 	{
 		std::string s = "";
@@ -14,29 +18,39 @@ namespace Util
 
 	void PrintVisitor::visit(Invalid &node)
 	{
-		print("Invalid");
+		print(str.stringify(node));
 	}
 
 	void PrintVisitor::visit(NumberLiteral &node)
 	{
-		print("Number '", node.value, "'");
+		print(str.stringify(node));
 	}
 	void PrintVisitor::visit(StringLiteral &node)
 	{
-		print("String '", node.value, "'");
+		print(str.stringify(node));
 	}
 	void PrintVisitor::visit(BooleanLiteral &node)
 	{
-		print("Boolean '", node.value, "'");
+		print(str.stringify(node));
 	}
 	void PrintVisitor::visit(Identifier &node)
 	{
-		print("Identifier '", node.value, "'");
+		print(str.stringify(node));
+	}
+	void PrintVisitor::visit(FunctionCall &node)
+	{
+		print(str.stringify(node));
+		tab_level++;
+		for(const auto &arg : node.arguments)
+		{
+			arg->accept(*this);
+		}
+		tab_level++;
 	}
 
 	void PrintVisitor::visit(InfixOperator &node)
 	{
-		print("Infix operator '", node.symbol, "'");
+		print(str.stringify(node));
 		tab_level++;
 		node.left->accept(*this);
 		node.right->accept(*this);
@@ -44,16 +58,16 @@ namespace Util
 	}
 	void PrintVisitor::visit(PrefixOperator &node)
 	{
-		print("Prefix operator '", node.symbol, "'");
+		print(str.stringify(node));
 		tab_level++;
-		node.value->accept(*this);
+		node.operand->accept(*this);
 		tab_level--;
 	}
 	void PrintVisitor::visit(PostfixOperator &node)
 	{
-		print("Postfix operator '", node.symbol, "'");
+		print(str.stringify(node));
 		tab_level++;
-		node.value->accept(*this);
+		node.operand->accept(*this);
 		tab_level--;
 	}
 }

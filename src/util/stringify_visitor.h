@@ -1,18 +1,18 @@
 #pragma once
 
 #include <string>
+#include <sstream>
 
 #include "../ast/visitor.h"
 #include "../ast/node.h"
-#include "stringify_visitor.h"
 #include "../log.h"
 
 namespace Util
 {
-	class PrintVisitor : public Visitor
+	class StringifyVisitor : public Visitor
 	{
 	public:
-		explicit PrintVisitor(bool verbose = false);
+		explicit StringifyVisitor(bool verbose = false);
 
 		virtual void visit(Invalid &node);
 
@@ -26,15 +26,11 @@ namespace Util
 		virtual void visit(PrefixOperator &node);
 		virtual void visit(PostfixOperator &node);
 
+		std::string stringify(Node &node);
 	private:
-		unsigned tab_level = 0;
-		StringifyVisitor str;
-		const std::string prefix_tab() const;
+		std::stringstream value;
+		const bool verbose;
 
-		template<typename... Args>
-		inline void print(Args &&... args) const
-		{
-			Logger::get().debug(prefix_tab(), std::forward<Args>(args)...);
-		}
+		std::string get();
 	};
 }

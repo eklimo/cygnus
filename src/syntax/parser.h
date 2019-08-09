@@ -6,8 +6,9 @@
 #include <exception>
 #include <sstream>
 
-#include "../util/error.h"
 #include "../ast/node.h"
+#include "../util/error.h"
+#include "../util/stringify_visitor.h"
 #include "lexer.h"
 #include "token.h"
 
@@ -23,6 +24,7 @@ public:
 private:
 	std::vector<Token>::const_iterator it;
 	const std::vector<Token>::const_iterator end;
+	Util::StringifyVisitor stringifier;
 
 	const Token &token() const;
 	bool advance();
