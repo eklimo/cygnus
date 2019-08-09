@@ -1,64 +1,15 @@
 #include "lexer.h"
 
-#include <ostream>
 #include <cctype>
-#include <functional>
 
 #include "log.h"
+#include "lang.h"
+
+using Lexer::Token;
+using Lexer::TokenType;
 
 namespace Lexer
 {
-	constexpr std::string_view keywords[] = {"var", "true", "false"};
-	// descending length
-	constexpr std::string_view operators[] = {"==", "++", "--", "=", "+", "-", "*", "/", "."};
-	constexpr std::string_view word_operators[] = {"and", "or"};
-	constexpr std::string_view separators[] = {"(", ")", "[", "]", "{", "}", ","};
-
-	constexpr bool is_keyword(std::string_view str)
-	{
-		for(const auto &keyword : keywords)
-		{
-			if(str == keyword)
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-	constexpr bool is_operator(std::string_view str)
-	{
-		for(const auto &op : operators)
-		{
-			if(str == op)
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-	constexpr bool is_word_operator(std::string_view str)
-	{
-		for(const auto &op : word_operators)
-		{
-			if(str == op)
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-	constexpr bool is_separator(std::string_view str)
-	{
-		for(const auto &sep : separators)
-		{
-			if(str == sep)
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-
 	Token tokenize_string_literal(std::string_view::const_iterator &it, std::string_view::const_iterator end, unsigned &line, unsigned &column)
 	{
 		// skip initial quotation mark
@@ -86,11 +37,11 @@ namespace Lexer
 
 	Token tokenize_operator_separator(std::string_view::const_iterator &it, std::string_view::const_iterator end, unsigned &line, unsigned &column)
 	{
-		for(const auto &op : operators)
+		for(const auto &op : Lang::operators)
 		{
 			auto length = op.length();
 			std::string_view ahead(it, length);
-			if(is_operator(ahead))
+			if(Lang::is_operator(ahead))
 			{
 				it += length - 1;
 				column += length - 1;
@@ -104,11 +55,11 @@ namespace Lexer
 			}
 		}
 
-		for(const auto &sep : separators)
+		for(const auto &sep : Lang::separators)
 		{
 			auto length = sep.length();
 			std::string_view ahead(it, length);
-			if(is_separator(ahead))
+			if(Lang::is_separator(ahead))
 			{
 				it += length - 1;
 				column += length - 1;
@@ -122,7 +73,13 @@ namespace Lexer
 			}
 		}
 
-		return {};
+		return
+		{
+			.type = TokenType::Invalid,
+			.value = std::string_view(it, 0),
+			.line = line,
+			.column = column
+		};
 	}
 
 	Token tokenize_number_literal(std::string_view::const_iterator &it, std::string_view::const_iterator end, unsigned &line, unsigned &column)
@@ -173,24 +130,26 @@ namespace Lexer
 		it--;
 		column--;
 
-		Token token =
+		auto type = TokenType::Identifier;
+		auto value = std::string_view(begin, length);
+
+
+		if(Lang::is_keyword(value))
 		{
-			.type = TokenType::Identifier,
-			.value = std::string_view(begin, length),
+			type = TokenType::Keyword;
+		}
+		else if(Lang::is_word_operator(value))
+		{
+			type = TokenType::Operator;
+		}
+
+		return
+		{
+			.type = type,
+			.value = value,
 			.line = line,
 			.column = column
 		};
-
-		if(is_keyword(token.value))
-		{
-			token.type = TokenType::Keyword;
-		}
-		else if(is_word_operator(token.value))
-		{
-			token.type = TokenType::Operator;
-		}
-
-		return token;
 	}
 
 	std::vector<Token> tokenize(std::string_view input)
@@ -276,37 +235,9 @@ namespace Lexer
 
 		if(invalid)
 		{
-			std::exit(0);
+			// std::exit(0);
 		}
 
 		return tokens;
-	}
-
-	constexpr const char *type_to_string(TokenType type)
-	{
-		switch(type)
-		{
-			case TokenType::Invalid:
-				return "invalid";
-			case TokenType::Number:
-				return "number";
-			case TokenType::String:
-				return "string";
-			case TokenType::Identifier:
-				return "identifier";
-			case TokenType::Keyword:
-				return "keyword";
-			case TokenType::Operator:
-				return "operator";
-			case TokenType::Separator:
-				return "separator";
-			default:
-				return "";
-		}
-	}
-
-	std::ostream &operator<<(std::ostream &stream, const Token &token)
-	{
-		return stream << "[" << type_to_string(token.type) << "] '" << token.value << "'";
 	}
 }

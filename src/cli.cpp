@@ -3,8 +3,8 @@
 #include <fstream>
 
 #include "log.h"
+#include "util/util.h"
 #include "compiler.h"
-#include "util.h"
 
 namespace CLI
 {

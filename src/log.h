@@ -1,7 +1,6 @@
 #pragma once
 
 #include <iostream>
-#include <utility>
 
 enum LogLevel
 {
@@ -31,31 +30,31 @@ public:
 
 
 private:
-	LogLevel level_;
+	LogLevel level;
 
 	constexpr const char *prefix(LogLevel level) const
 	{
 		switch(level)
 		{
 			case DEBUG:
-				return "\033[1;32m[debug]\033[0m ";
+				return "\033[1;32m[D]\033[0m ";
 			case INFO:
-				return "\033[1;37m[info]\033[0m ";
+				return "\033[1;37m[I]\033[0m ";
 			case WARNING:
-				return "\033[1;33m[warning]\033[0m ";
+				return "\033[1;33m[W]\033[0m ";
 			case ERROR:
-				return "\033[1;31m[error]\033[0m ";
+				return "\033[1;31m[E]\033[0m ";
 			default:
 				return "";
 		}
 	}
 
 	template<typename... Args>
-	void log(LogLevel level, Args &&... args) const
+	void log(LogLevel _level, Args &&... args) const
 	{
-		if(level_ <= level)
+		if(level <= _level)
 		{
-			std::cout << prefix(level);
+			std::cout << prefix(_level);
 			// ((std::cout << args << " "), ...) << std::endl;
 			(std::cout << ... << args) << std::endl;
 		}

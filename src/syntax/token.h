@@ -1,6 +1,5 @@
 #pragma once
 
-#include <vector>
 #include <string_view>
 
 namespace Lexer
@@ -16,14 +15,16 @@ namespace Lexer
 		Separator
 	};
 
-	struct Token
+	class Token
 	{
-		TokenType type = TokenType::Invalid;
-		std::string_view value;
-		unsigned line, column;
+	public:
+		Token(TokenType type, std::string_view value, unsigned line, unsigned column);
+		Token();
+
+		const TokenType type;
+		const std::string_view value;
+		const unsigned line, column;
 
 		friend std::ostream &operator<<(std::ostream &stream, const Token &token);
 	};
-
-	std::vector<Token> tokenize(std::string_view input);
 }
