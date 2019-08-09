@@ -3,6 +3,7 @@
 #include <cctype>
 
 #include "log.h"
+#include "util/error.h"
 #include "lang.h"
 
 using Lexer::Token;
@@ -10,6 +11,8 @@ using Lexer::TokenType;
 
 namespace Lexer
 {
+	using LexerError = Util::CompilerError;
+
 	Token tokenize_string_literal(std::string_view::const_iterator &it, std::string_view::const_iterator end, unsigned &line, unsigned &column)
 	{
 		// skip initial quotation mark
@@ -155,7 +158,6 @@ namespace Lexer
 	std::vector<Token> tokenize(std::string_view input)
 	{
 		std::vector<Token> tokens;
-		bool invalid = false;
 
 		unsigned line = 1;
 		unsigned column = 1;
@@ -199,8 +201,7 @@ namespace Lexer
 				auto token = tokenize_operator_separator(it, input.end(), line, column);
 				if(token.type == TokenType::Invalid)
 				{
-					Logger::get().error("Invalid symbol '", *it, "' at ", line, ":", column);
-					invalid = true;
+					throw LexerError("Unexpected symbol '", *it, "' at ", line, ":", column);
 				}
 				tokens.push_back(token);
 			}
@@ -220,22 +221,8 @@ namespace Lexer
 			// invalid
 			else
 			{
-				Logger::get().error("Invalid symbol '", *it, "' at ", line, ":", column);
-				tokens.push_back(
-				{
-					.type = TokenType::Invalid,
-					.value = std::string_view(it, 1),
-					.line = line,
-					.column = column
-				});
-				invalid = true;
-				continue;
+				throw LexerError("Invalid symbol '", *it, "' at ", line, ":", column);
 			}
-		}
-
-		if(invalid)
-		{
-			// std::exit(0);
 		}
 
 		return tokens;

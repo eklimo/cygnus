@@ -13,7 +13,16 @@ namespace Compiler
 	{
 		// lexer
 		Logger::get().debug("Tokenizing '", file, "'");
-		auto tokens = Lexer::tokenize(source);
+		std::vector<Lexer::Token> tokens;
+		try
+		{
+			tokens = Lexer::tokenize(source);
+		}
+		catch(Util::CompilerError &e)
+		{
+			Logger::get().error(e.what());
+			std::exit(0);
+		}
 
 		Logger::get().debug("Tokens:");
 		for(const auto &token : tokens)
@@ -29,7 +38,7 @@ namespace Compiler
 		{
 			ast = parser.parse();
 		}
-		catch(Parser::ParseError &e)
+		catch(Util::CompilerError &e)
 		{
 			Logger::get().error(e.what());
 			std::exit(0);

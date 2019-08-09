@@ -6,6 +6,7 @@
 #include <exception>
 #include <sstream>
 
+#include "../util/error.h"
 #include "../ast/node.h"
 #include "lexer.h"
 #include "token.h"
@@ -18,20 +19,6 @@ class Parser
 public:
 	explicit Parser(std::vector<Token> &tokens);
 	std::unique_ptr<Node> parse();
-
-	class ParseError : public std::runtime_error
-	{
-	public:
-		template<typename... Args>
-		ParseError(Args &&... args)
-			: std::runtime_error("")
-		{
-			(message << ... << args);
-		}
-		std::string what() throw();
-	private:
-		std::stringstream message;
-	};
 
 private:
 	std::vector<Token>::const_iterator it;

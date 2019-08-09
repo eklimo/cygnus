@@ -6,10 +6,7 @@ Parser::Parser(std::vector<Token> &tokens)
 	: it(tokens.cbegin()), end(tokens.cend())
 {}
 
-std::string Parser::ParseError::what() throw()
-{
-	return message.str();
-}
+using ParseError = Util::CompilerError;
 
 // parser
 
@@ -86,7 +83,6 @@ std::unique_ptr<Node> Parser::null_denotation(const Token &token)
 			else
 			{
 				throw ParseError("Unexpected keyword '", token.value, "'");
-				return nullptr;
 			}
 		}
 
@@ -117,12 +113,10 @@ std::unique_ptr<Node> Parser::null_denotation(const Token &token)
 			else
 			{
 				throw ParseError("Unexpected symbol '", token.value, "'");
-				return nullptr;
 			}
 		}
 
 		default:
-		case TokenType::Invalid:
 			return nullptr;
 	}
 }
@@ -147,12 +141,6 @@ std::unique_ptr<Node> Parser::left_denotation(const Token &token, std::unique_pt
 			return std::make_unique<InfixOperator>(token.value, std::move(left), std::move(right));
 		}
 		default:
-		case TokenType::Number:
-		case TokenType::String:
-		case TokenType::Identifier:
-		case TokenType::Keyword:
-		case TokenType::Separator:
-		case TokenType::Invalid:
 			return nullptr;
 	}
 }
