@@ -114,7 +114,7 @@ std::unique_ptr<Node> Parser::left_denotation(const Token &tok, std::unique_ptr<
 			// infix
 			else
 			{
-				auto right = expression(prec);
+				auto right = expression(Lang::is_right_associative(tok) ? prec - 1 : prec);
 
 				if(!right)
 				{

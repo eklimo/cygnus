@@ -11,7 +11,7 @@ namespace Lang
 {
 	constexpr std::string_view keywords[] = {"true", "false"};
 	// descending length
-	constexpr std::string_view operators[] = {"++", "--", "+", "-", "*", "/"};
+	constexpr std::string_view operators[] = {"++", "--", "+", "-", "*", "/", "="};
 	constexpr std::string_view word_operators[] = {};
 	constexpr std::string_view separators[] = {"(", ")", ","};
 
@@ -60,35 +60,6 @@ namespace Lang
 
 	// operator
 
-	constexpr int left_precedence(const Token &token)
-	{
-		const std::string_view sym = token.value;
-
-		switch(token.type)
-		{
-			case TokenType::Operator:
-			{
-				if(sym == "++" || sym == "--")
-					return 40;
-				else if(sym == "*" || sym == "/")
-					return 20;
-				else if(sym == "+" || sym == "-")
-					return 10;
-				break;
-			}
-			case TokenType::Separator:
-			{
-				if(sym == "(")
-					return 1000;
-				break;
-			}
-			default:
-				return -1;
-		}
-
-		return -1;
-	}
-
 	constexpr int null_precedence(const Token &token)
 	{
 		const std::string_view sym = token.value;
@@ -126,6 +97,37 @@ namespace Lang
 		return -1;
 	}
 
+	constexpr int left_precedence(const Token &token)
+	{
+		const std::string_view sym = token.value;
+
+		switch(token.type)
+		{
+			case TokenType::Operator:
+			{
+				if(sym == "++" || sym == "--")
+					return 40;
+				else if(sym == "*" || sym == "/")
+					return 20;
+				else if(sym == "+" || sym == "-")
+					return 10;
+				else if(sym == "=")
+					return 1;
+				break;
+			}
+			case TokenType::Separator:
+			{
+				if(sym == "(")
+					return 1000;
+				break;
+			}
+			default:
+				return -1;
+		}
+
+		return -1;
+	}
+
 	constexpr bool is_postfix(const Token &token)
 	{
 		if(token.type != TokenType::Operator) return false;
@@ -133,6 +135,18 @@ namespace Lang
 		const std::string_view sym = token.value;
 
 		if(sym == "++" || sym == "--")
+			return true;
+
+		return false;
+	}
+
+	constexpr bool is_right_associative(const Token &token)
+	{
+		if(token.type != TokenType::Operator) return false;
+
+		const std::string_view sym = token.value;
+
+		if(sym == "=")
 			return true;
 
 		return false;
