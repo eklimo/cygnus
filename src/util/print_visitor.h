@@ -34,7 +34,7 @@ namespace Util
 		template<typename... Args>
 		inline void print(Args &&... args) const
 		{
-			Logger::get().debug(prefix_tab(), std::forward<Args>(args)...);
+			Logger::get().debug(std::string(3 * tab_level, ' '), std::forward<Args>(args)...);
 		}
 	};
 }

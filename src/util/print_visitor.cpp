@@ -45,7 +45,7 @@ namespace Util
 		{
 			arg->accept(*this);
 		}
-		tab_level++;
+		tab_level--;
 	}
 
 	void PrintVisitor::visit(InfixOperator &node)
