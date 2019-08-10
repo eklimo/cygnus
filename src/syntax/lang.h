@@ -72,11 +72,13 @@ namespace Lang
 					return 20;
 				else if(sym == "+" || sym == "-")
 					return 10;
+				break;
 			}
 			case TokenType::Separator:
 			{
 				if(sym == "(")
 					return 1000;
+				break;
 			}
 			default:
 				return -1;
@@ -95,16 +97,19 @@ namespace Lang
 			{
 				if(sym == "+" || sym == "-")
 					return 100;
+				break;
 			}
 			case TokenType::Separator:
 			{
 				if(sym == "(")
 					return 0;
+				break;
 			}
 			case TokenType::Keyword:
 			{
 				if(is_boolean(token.value))
 					return 0;
+				break;
 			}
 			case TokenType::Number:
 			case TokenType::String:

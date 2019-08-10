@@ -85,13 +85,6 @@ std::unique_ptr<Node> Parser::null_denotation(const Token &tok)
 
 				return expr;
 			}
-			else if(tok.value == ")")
-			{
-				if(is_valid_index(-2) && (it - 2)->value == "(")
-					throw ParseError("Expected expression after '('");
-				else
-					return nullptr;
-			}
 			else
 			{
 				return nullptr;
