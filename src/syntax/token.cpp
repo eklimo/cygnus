@@ -4,12 +4,16 @@
 
 namespace Lexer
 {
-	Token::Token(TokenType _type, std::string_view _value, unsigned _line, unsigned _column)
-		: type(_type), value(_value), line(_line), column(_column)
+	Token::Token(TokenType _type, std::string_view _value, Util::FileLocation _location)
+		: type(_type),
+		  value(_value),
+		  location(_location)
 	{}
 
 	Token::Token()
-		: type(TokenType::Invalid), line(0), column(0)
+		: type(TokenType::Invalid),
+		  value(""),
+		  location({})
 	{}
 
 	constexpr const char *type_to_string(TokenType type)

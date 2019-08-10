@@ -82,9 +82,9 @@ namespace Lang
 			}
 			case TokenType::Keyword:
 			{
-				if(is_boolean(token.value))
-					return 0;
-				break;
+				// keyword handling deferred to parser
+				// if(is_boolean(token.value))
+				return 0;
 			}
 			case TokenType::Number:
 			case TokenType::String:

@@ -2,6 +2,8 @@
 
 #include <string_view>
 
+#include "../util/util.h"
+
 namespace Lexer
 {
 	enum class TokenType
@@ -18,12 +20,12 @@ namespace Lexer
 	class Token
 	{
 	public:
-		Token(TokenType type, std::string_view value, unsigned line, unsigned column);
+		Token(TokenType type, std::string_view value, Util::FileLocation loc);
 		Token();
 
 		const TokenType type;
 		const std::string_view value;
-		const unsigned line, column;
+		const Util::FileLocation location;
 
 		friend std::ostream &operator<<(std::ostream &stream, const Token &token);
 	};

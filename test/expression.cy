@@ -1,1 +1,4 @@
-a * 2 = z = c + 5
+
+# error message demo
+f(x, y * 0.5) sin(12)
+# code ...

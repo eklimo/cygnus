@@ -9,14 +9,35 @@ Parser::Parser(std::vector<Token> &tokens)
 	  stringifier()
 {}
 
-using ParseError = Util::CompilerError;
+template<typename... Args>
+void error(const std::vector<Lexer::Token>::const_iterator it, Args &&...args)
+{
+	if(it->type == TokenType::Invalid)
+	{
+		Util::FileLocation loc =
+		{
+			.line = (it - 1)->location.line,
+			.column = (it - 1)->location.column + 1
+		};
+		throw Util::CompilerError(loc, std::forward<Args>(args)...);
+	}
+	else if(it->type == TokenType::String)
+	{
+		auto begin = it->location;
+		auto end = Util::FileLocation(it->location.line, it->location.column + 1 + it->value.length() + 1);
+		throw Util::CompilerError(begin, end, std::forward<Args>(args)...);
+	}
+	auto begin = it->location;
+	auto end = Util::FileLocation(it->location.line, it->location.column + it->value.length());
+	throw Util::CompilerError(begin, end, std::forward<Args>(args)...);
+}
 
 std::unique_ptr<Node> Parser::parse()
 {
 	std::unique_ptr<Node> root = expression();
 
 	if(it < end)
-		throw ParseError("Unexpected symbol '", it->value, "'");
+		error(it, "unexpected symbol '", it->value, "'");
 
 	return root;
 }
@@ -43,7 +64,7 @@ std::unique_ptr<Node> Parser::null_denotation(const Token &tok)
 			if(Lang::is_boolean(tok.value))
 				return std::make_unique<BooleanLiteral>(tok.value);
 			else
-				throw ParseError("Unexpected keyword '", tok.value, "'");
+				error(it - 1, "unexpected symbol '", tok.value, "'");
 		}
 
 		case TokenType::Operator:
@@ -52,11 +73,11 @@ std::unique_ptr<Node> Parser::null_denotation(const Token &tok)
 			if(!operand)
 			{
 				if((Lang::null_precedence(tok) != -1 && Lang::left_precedence(tok) != -1) && token().type != TokenType::Invalid)
-					throw ParseError("Unexpected symbol '", token().value, "'");
+					error(it, "unexpected symbol '", token().value, "'");
 				else if(token().type == TokenType::Invalid)
-					throw ParseError("Expected operand after '", (it - 1)->value, "'");
+					error(it, "expected operand after '", (it - 1)->value, "'");
 				else
-					throw ParseError("Unexpected symbol '", token().value, "'");
+					error(it, "unexpected symbol '", token().value, "'");
 			}
 
 			return std::make_unique<PrefixOperator>(tok.value, std::move(operand));
@@ -70,17 +91,17 @@ std::unique_ptr<Node> Parser::null_denotation(const Token &tok)
 				if(!expr)
 				{
 					if(token().type == TokenType::Invalid || token().value == ")")
-						throw ParseError("Expected expression after '", (it - 1)->value, "'");
+						error(it, "expected expression after '", (it - 1)->value, "'");
 					else
-						throw ParseError("Unexpected symbol '", token().value, "'");
+						error(it, "unexpected symbol '", token().value, "'");
 				}
 
 				if(!match(")"))
 				{
 					if(token().type == TokenType::Invalid)
-						throw ParseError("Expected ')' after '", (it - 1)->value, "'");
+						error(it, "expected ')' after '", (it - 1)->value, "'");
 					else
-						throw ParseError("Unexpected symbol '", token().value, "'");
+						error(it, "unexpected symbol '", token().value, "'");
 				}
 
 				return expr;
@@ -99,8 +120,6 @@ std::unique_ptr<Node> Parser::null_denotation(const Token &tok)
 std::unique_ptr<Node> Parser::left_denotation(const Token &tok, std::unique_ptr<Node> &left)
 {
 	int prec = Lang::left_precedence(tok);
-	if(prec == -1)
-		throw ParseError("Unexpected symbol '", tok.value, "'");
 
 	switch(tok.type)
 	{
@@ -119,9 +138,9 @@ std::unique_ptr<Node> Parser::left_denotation(const Token &tok, std::unique_ptr<
 				if(!right)
 				{
 					if(token().type == TokenType::Invalid)
-						throw ParseError("Expected operand after '", (it - 1)->value, "'");
+						error(it, "expected operand after '", (it - 1)->value, "'");
 					else
-						throw ParseError("Unexpected symbol '", token().value, "'");
+						error(it, "unexpected symbol '", token().value, "'");
 				}
 
 				return std::make_unique<InfixOperator>(tok.value, std::move(left), std::move(right));
@@ -135,9 +154,9 @@ std::unique_ptr<Node> Parser::left_denotation(const Token &tok, std::unique_ptr<
 				// prevent calls on invalid tokens
 				if(is_valid_index(-2))
 				{
-					if((it - 2)->type == TokenType::Operator)
+					if((it - 2)->type != TokenType::Identifier)
 					{
-						throw ParseError("Unexpected token '", tok.value, "'");
+						error(it - 1, "unexpected symbol '", tok.value, "'");
 					}
 				}
 
@@ -150,18 +169,18 @@ std::unique_ptr<Node> Parser::left_denotation(const Token &tok, std::unique_ptr<
 						if(token().value == ")")
 						{
 							if((it - 1)->value == ",")
-								throw ParseError("Expected expression after ','");
+								error(it, "expected expression after ','");
 							else
-								throw ParseError("Expected expression before ')'");
+								error((it - 1), "expected expression before ')'");
 						}
 
 						auto arg = expression(0);
 						if(!arg)
 						{
 							if(token().type == TokenType::Invalid)
-								throw ParseError("Expected expression after '", (it - 1)->value, "'");
+								error(it, "expected expression after '", (it - 1)->value, "'");
 							else
-								throw ParseError("Unexpected token '", token().value, "'");
+								error(it, "unexpected symbol '", token().value, "'");
 						}
 						arguments.push_back(std::move(arg));
 
@@ -175,9 +194,9 @@ std::unique_ptr<Node> Parser::left_denotation(const Token &tok, std::unique_ptr<
 				if(!match(")"))
 				{
 					if(token().type == TokenType::Invalid)
-						throw ParseError("Expected ')' after '", (it - 1)->value, "'");
+						error(it, "expected ')' after '", (it - 1)->value, "'");
 					else
-						throw ParseError("Unexpected symbol '", token().value, "'");
+						error(it, "unexpected symbol '", token().value, "'");
 				}
 
 				return std::make_unique<FunctionCall>(std::move(left), std::move(arguments));
@@ -214,13 +233,7 @@ std::unique_ptr<Node> Parser::expression(int rbp)
 
 const Token &Parser::token() const
 {
-	static Token inv =
-	{
-		.type = TokenType::Invalid,
-		.value = "",
-		.line = 0,
-		.column = 0
-	};
+	static Token inv;
 	if(it == end) return inv;
 
 	return *it;

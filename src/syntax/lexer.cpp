@@ -3,7 +3,7 @@
 #include <cctype>
 
 #include "log.h"
-#include "util/error.h"
+#include "../util/error.h"
 #include "lang.h"
 
 using Lexer::Token;
@@ -11,30 +11,35 @@ using Lexer::TokenType;
 
 namespace Lexer
 {
-	using LexerError = Util::CompilerError;
-
 	Token tokenize_string_literal(std::string_view::const_iterator &it, std::string_view::const_iterator end, unsigned &line, unsigned &column)
 	{
-		// skip initial quotation mark
+		// initial quotation mark
 		auto begin = ++it;
-		std::string_view::size_type length = 0;
+		unsigned length = 0;
+
+		Util::FileLocation initial_quote = { line, column };
 
 		while(it != end && *it != '"')
 		{
 			it++;
 			length++;
+
 			column++;
+			if(*it == '\n' || it == end)
+			{
+				throw Util::CompilerError(initial_quote, { line, column + 1 }, "unterminated string literal");
+			}
 		}
-		// skip closing quotation mark
+		// closing quotation mark
 		// it--;
 		// column--;
+		column++;
 
 		return
 		{
 			.type = TokenType::String,
 			.value = std::string_view(begin, length),
-			.line = line,
-			.column = column
+			.location = initial_quote
 		};
 	}
 
@@ -52,8 +57,7 @@ namespace Lexer
 				{
 					.type = TokenType::Operator,
 					.value = ahead,
-					.line = line,
-					.column = column
+					.location = { line, column }
 				};
 			}
 		}
@@ -70,8 +74,7 @@ namespace Lexer
 				{
 					.type = TokenType::Separator,
 					.value = ahead,
-					.line = line,
-					.column = column
+					.location = { line, column }
 				};
 			}
 		}
@@ -79,21 +82,21 @@ namespace Lexer
 		return
 		{
 			.type = TokenType::Invalid,
-			.value = std::string_view(it, 0),
-			.line = line,
-			.column = column
+			.value = "",
+			.location = { line, column }
 		};
 	}
 
 	Token tokenize_number_literal(std::string_view::const_iterator &it, std::string_view::const_iterator end, unsigned &line, unsigned &column)
 	{
 		auto begin = it;
-		std::string_view::size_type length = 0;
+		unsigned length = 0;
 
 		while(it != end && isdigit(*it))
 		{
 			it++;
 			length++;
+			column++;
 		}
 		if(*it == '.')
 		{
@@ -114,15 +117,14 @@ namespace Lexer
 		{
 			.type = TokenType::Number,
 			.value = std::string_view(begin, length),
-			.line = line,
-			.column = column
+			.location = { line, column }
 		};
 	}
 
 	Token tokenize_identifier_keyword(std::string_view::const_iterator &it, std::string_view::const_iterator end, unsigned &line, unsigned &column)
 	{
 		auto begin = it;
-		std::string_view::size_type length = 0;
+		unsigned length = 0;
 
 		while(it != end && (isalnum(*it) || *it == '_'))
 		{
@@ -150,8 +152,11 @@ namespace Lexer
 		{
 			.type = type,
 			.value = value,
-			.line = line,
-			.column = column
+			.location =
+			{
+				.line = line,
+				.column = column - length + 1
+			}
 		};
 	}
 
@@ -160,7 +165,7 @@ namespace Lexer
 		std::vector<Token> tokens;
 
 		unsigned line = 1;
-		unsigned column = 1;
+		unsigned column = 0;
 
 		for(auto it = input.cbegin(); it != input.cend(); it++)
 		{
@@ -200,7 +205,7 @@ namespace Lexer
 			{
 				auto token = tokenize_operator_separator(it, input.end(), line, column);
 				if(token.type == TokenType::Invalid)
-					throw LexerError("Unexpected symbol '", *it, "'");
+					throw Util::CompilerError(token.location, "unexpected symbol '", *it, "'");
 
 				tokens.push_back(token);
 			}
@@ -220,7 +225,7 @@ namespace Lexer
 			// invalid
 			else
 			{
-				throw LexerError("Unexpected symbol '", *it, "'");
+				throw Util::CompilerError({ line, column }, "unexpected symbol '", *it, "'");
 			}
 		}
 

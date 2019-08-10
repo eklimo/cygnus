@@ -20,7 +20,7 @@ namespace Compiler
 		}
 		catch(Util::CompilerError &e)
 		{
-			Logger::get().error(e.what());
+			e.print(file, source);
 			std::exit(0);
 		}
 
@@ -40,7 +40,7 @@ namespace Compiler
 		}
 		catch(Util::CompilerError &e)
 		{
-			Logger::get().error(e.what());
+			e.print(file, source);
 			std::exit(0);
 		}
 		Util::PrintVisitor printer(true);

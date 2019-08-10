@@ -74,7 +74,7 @@ Options:
 
 		if(options.debug)
 		{
-			Logger::get().set_level(DEBUG);
+			Logger::get().set_level(LogLevel::Debug);
 			Logger::get().info("Enabled debug logging");
 		}
 
