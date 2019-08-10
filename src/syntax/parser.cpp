@@ -3,7 +3,10 @@
 #include "lang.h"
 
 Parser::Parser(std::vector<Token> &tokens)
-	: it(tokens.cbegin()), end(tokens.cend()), stringifier()
+	: it(tokens.cbegin()),
+	  begin(tokens.cbegin()),
+	  end(tokens.cend()),
+	  stringifier()
 {}
 
 using ParseError = Util::CompilerError;
@@ -13,65 +16,17 @@ std::unique_ptr<Node> Parser::parse()
 	std::unique_ptr<Node> root = expression();
 
 	if(it < end)
-	{
 		throw ParseError("Unexpected symbol '", it->value, "'");
-	}
 
 	return root;
 }
 
-// expression parsing
-
-constexpr int infix_precedence(const Token &token)
-{
-	std::string_view sym = token.value;
-
-	switch(token.type)
-	{
-		case TokenType::Operator:
-		{
-			if(sym == "*" || sym == "/")
-			{
-				return 20;
-			}
-			else if(sym == "+" || sym == "-")
-			{
-				return 10;
-			}
-		}
-		case TokenType::Separator:
-		{
-			if(sym == "(")
-			{
-				return 1000;
-			}
-		}
-		default:
-			return -1;
-	}
-
-	return -1;
-}
-
-constexpr int prefix_precedence(const Token &token)
-{
-	std::string_view sym = token.value;
-
-	if(sym == "+" || sym == "-")
-	{
-		return 100;
-	}
-	else if(sym == "(")
-	{
-		return 0;
-	}
-
-	return -1;
-}
+// expressions
 
 std::unique_ptr<Node> Parser::null_denotation(const Token &tok)
 {
-	int prec = prefix_precedence(tok);
+	int prec = Lang::null_precedence(tok);
+
 	switch(tok.type)
 	{
 		case TokenType::Number:
@@ -86,42 +41,60 @@ std::unique_ptr<Node> Parser::null_denotation(const Token &tok)
 		case TokenType::Keyword:
 		{
 			if(Lang::is_boolean(tok.value))
-			{
 				return std::make_unique<BooleanLiteral>(tok.value);
-			}
 			else
-			{
 				throw ParseError("Unexpected keyword '", tok.value, "'");
-			}
 		}
 
 		case TokenType::Operator:
 		{
-			if(prec == -1)
-			{
-				throw ParseError("Expected operand before '", tok.value, "'");
-			}
 			auto operand = expression(prec);
 			if(!operand)
 			{
-				throw ParseError("Expected operand after '", tok.value, "'");
+				if((Lang::null_precedence(tok) != -1 && Lang::left_precedence(tok) != -1) && token().type != TokenType::Invalid)
+					throw ParseError("Unexpected symbol '", token().value, "'");
+				else if(token().type == TokenType::Invalid)
+					throw ParseError("Expected operand after '", (it - 1)->value, "'");
+				else
+					throw ParseError("Unexpected symbol '", token().value, "'");
 			}
+
 			return std::make_unique<PrefixOperator>(tok.value, std::move(operand));
 		}
+
 		case TokenType::Separator:
 		{
 			if(tok.value == "(")
 			{
 				auto expr = expression(prec);
+				if(!expr)
+				{
+					if(token().type == TokenType::Invalid || token().value == ")")
+						throw ParseError("Expected expression after '", (it - 1)->value, "'");
+					else
+						throw ParseError("Unexpected symbol '", token().value, "'");
+				}
+
 				if(!match(")"))
 				{
-					throw ParseError("Expected ')'");
+					if(token().type == TokenType::Invalid)
+						throw ParseError("Expected ')' after '", (it - 1)->value, "'");
+					else
+						throw ParseError("Unexpected symbol '", token().value, "'");
 				}
+
 				return expr;
+			}
+			else if(tok.value == ")")
+			{
+				if(is_valid_index(-2) && (it - 2)->value == "(")
+					throw ParseError("Expected expression after '('");
+				else
+					return nullptr;
 			}
 			else
 			{
-				throw ParseError("Unexpected symbol '", tok.value, "'");
+				return nullptr;
 			}
 		}
 
@@ -132,23 +105,27 @@ std::unique_ptr<Node> Parser::null_denotation(const Token &tok)
 
 std::unique_ptr<Node> Parser::left_denotation(const Token &tok, std::unique_ptr<Node> &left)
 {
-	int prec = infix_precedence(tok);
+	int prec = Lang::left_precedence(tok);
 	if(prec == -1)
-	{
 		throw ParseError("Unexpected symbol '", tok.value, "'");
-	}
+
 	switch(tok.type)
 	{
 		case TokenType::Operator:
 		{
 			auto right = expression(prec);
+
 			if(!right)
 			{
-				throw ParseError("Expected operand after '", tok.value, "'");
+				if(token().type == TokenType::Invalid)
+					throw ParseError("Expected operand after '", (it - 1)->value, "'");
+				else
+					throw ParseError("Unexpected symbol '", token().value, "'");
 			}
 
 			return std::make_unique<InfixOperator>(tok.value, std::move(left), std::move(right));
 		}
+
 		case TokenType::Separator:
 		{
 			if(tok.value == "(")
@@ -162,33 +139,34 @@ std::unique_ptr<Node> Parser::left_denotation(const Token &tok, std::unique_ptr<
 						if(token().value == ")")
 						{
 							if((it - 1)->value == ",")
-							{
 								throw ParseError("Expected expression after ','");
-							}
 							else
-							{
 								throw ParseError("Expected expression before ')'");
-							}
-						}
-						else if(token().type == TokenType::Invalid)
-						{
-							throw ParseError("Expected expression after '", (it - 1)->value, "'");
 						}
 
 						auto arg = expression(0);
+						if(!arg)
+						{
+							if(token().type == TokenType::Invalid)
+								throw ParseError("Expected expression after '", (it - 1)->value, "'");
+							else
+								throw ParseError("Unexpected token '", token().value, "'");
+						}
 						arguments.push_back(std::move(arg));
 
 						if(token().value != ",")
-						{
 							break;
-						}
+
 						match(",");
 					}
 				}
 
 				if(!match(")"))
 				{
-					throw ParseError("Expected ')' after function call '", stringifier.stringify(*left.get()), "'");
+					if(token().type == TokenType::Invalid)
+						throw ParseError("Expected ')' after '", (it - 1)->value, "'");
+					else
+						throw ParseError("Unexpected symbol '", token().value, "'");
 				}
 
 				return std::make_unique<FunctionCall>(std::move(left), std::move(arguments));
@@ -198,6 +176,7 @@ std::unique_ptr<Node> Parser::left_denotation(const Token &tok, std::unique_ptr<
 				return nullptr;
 			}
 		}
+
 		default:
 			return nullptr;
 	}
@@ -205,10 +184,13 @@ std::unique_ptr<Node> Parser::left_denotation(const Token &tok, std::unique_ptr<
 
 std::unique_ptr<Node> Parser::expression(int rbp)
 {
+	if(Lang::null_precedence(token()) == -1)
+		return nullptr;
+
 	auto const &first = token();
 	advance();
 	auto tree = null_denotation(first);
-	while(it < end && rbp < infix_precedence(token()))
+	while(it < end && rbp < Lang::left_precedence(token()))
 	{
 		auto const &next = token();
 		advance();
@@ -221,6 +203,15 @@ std::unique_ptr<Node> Parser::expression(int rbp)
 
 const Token &Parser::token() const
 {
+	static Token inv =
+	{
+		.type = TokenType::Invalid,
+		.value = "",
+		.line = 0,
+		.column = 0
+	};
+	if(it == end) return inv;
+
 	return *it;
 }
 
@@ -230,12 +221,15 @@ bool Parser::advance()
 	return it < end;
 }
 
+bool Parser::is_valid_index(int n) const
+{
+	return it + n >= begin && it + n <= end;
+}
+
 bool Parser::match(TokenType type)
 {
 	if(it == end)
-	{
 		return false;
-	}
 
 	if(it->type == type)
 	{
@@ -248,15 +242,14 @@ bool Parser::match(TokenType type)
 bool Parser::match(std::string_view value)
 {
 	if(it == end)
-	{
 		return false;
-	}
 
 	if(it->value == value)
 	{
 		advance();
 		return true;
 	}
+
 	return false;
 }
 

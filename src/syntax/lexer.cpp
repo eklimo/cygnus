@@ -200,9 +200,8 @@ namespace Lexer
 			{
 				auto token = tokenize_operator_separator(it, input.end(), line, column);
 				if(token.type == TokenType::Invalid)
-				{
-					throw LexerError("Unexpected symbol '", *it, "' at ", line, ":", column);
-				}
+					throw LexerError("Unexpected symbol '", *it, "'");
+
 				tokens.push_back(token);
 			}
 
@@ -221,7 +220,7 @@ namespace Lexer
 			// invalid
 			else
 			{
-				throw LexerError("Invalid symbol '", *it, "' at ", line, ":", column);
+				throw LexerError("Unexpected symbol '", *it, "'");
 			}
 		}
 

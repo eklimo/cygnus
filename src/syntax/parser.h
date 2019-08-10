@@ -23,11 +23,12 @@ public:
 
 private:
 	std::vector<Token>::const_iterator it;
-	const std::vector<Token>::const_iterator end;
+	const std::vector<Token>::const_iterator begin, end;
 	Util::StringifyVisitor stringifier;
 
 	const Token &token() const;
 	bool advance();
+	bool is_valid_index(int n) const;
 	bool match(TokenType type);
 	bool match(std::string_view value);
 	bool match(TokenType type, std::string_view value);

@@ -2,22 +2,26 @@
 
 #include <string_view>
 
+#include "../syntax/token.h"
+
+using Lexer::Token;
+using Lexer::TokenType;
+
 namespace Lang
 {
-	constexpr std::string_view keywords[] = {"var", "true", "false"};
+	constexpr std::string_view keywords[] = {"true", "false"};
 	// descending length
-	constexpr std::string_view operators[] = {"==", "++", "--", "=", "+", "-", "*", "/"};
-	constexpr std::string_view word_operators[] = {"and", "or"};
-	constexpr std::string_view separators[] = {"(", ")", "[", "]", "{", "}", ",", "."};
+	constexpr std::string_view operators[] = {"+", "-", "*", "/"};
+	constexpr std::string_view word_operators[] = {};
+	constexpr std::string_view separators[] = {"(", ")", ","};
+
+	// utility
 
 	constexpr bool is_keyword(std::string_view str)
 	{
 		for(const auto &keyword : keywords)
 		{
-			if(str == keyword)
-			{
-				return true;
-			}
+			if(str == keyword) return true;
 		}
 		return false;
 	}
@@ -26,10 +30,7 @@ namespace Lang
 	{
 		for(const auto &op : operators)
 		{
-			if(str == op)
-			{
-				return true;
-			}
+			if(str == op) return true;
 		}
 		return false;
 	}
@@ -38,10 +39,7 @@ namespace Lang
 	{
 		for(const auto &op : word_operators)
 		{
-			if(str == op)
-			{
-				return true;
-			}
+			if(str == op) return true;
 		}
 		return false;
 	}
@@ -50,10 +48,7 @@ namespace Lang
 	{
 		for(const auto &sep : separators)
 		{
-			if(str == sep)
-			{
-				return true;
-			}
+			if(str == sep) return true;
 		}
 		return false;
 	}
@@ -61,5 +56,64 @@ namespace Lang
 	constexpr bool is_boolean(std::string_view str)
 	{
 		return str == "true" || str == "false";
+	}
+
+	// precedence
+
+	constexpr int left_precedence(const Token &token)
+	{
+		const std::string_view sym = token.value;
+
+		switch(token.type)
+		{
+			case TokenType::Operator:
+			{
+				if(sym == "*" || sym == "/")
+					return 20;
+				else if(sym == "+" || sym == "-")
+					return 10;
+			}
+			case TokenType::Separator:
+			{
+				if(sym == "(")
+					return 1000;
+			}
+			default:
+				return -1;
+		}
+
+		return -1;
+	}
+
+	constexpr int null_precedence(const Token &token)
+	{
+		const std::string_view sym = token.value;
+
+		switch(token.type)
+		{
+			case TokenType::Operator:
+			{
+				if(sym == "+" || sym == "-")
+					return 100;
+			}
+			case TokenType::Separator:
+			{
+				if(sym == "(")
+					return 0;
+			}
+			case TokenType::Keyword:
+			{
+				if(is_boolean(token.value))
+					return 0;
+			}
+			case TokenType::Number:
+			case TokenType::String:
+			case TokenType::Identifier:
+				return 0;
+			default:
+				return -1;
+		}
+
+		return -1;
 	}
 }
