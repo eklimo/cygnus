@@ -106,23 +106,41 @@ std::unique_ptr<Node> Parser::left_denotation(const Token &tok, std::unique_ptr<
 	{
 		case TokenType::Operator:
 		{
-			auto right = expression(prec);
-
-			if(!right)
+			// postfix
+			if(Lang::is_postfix(tok))
 			{
-				if(token().type == TokenType::Invalid)
-					throw ParseError("Expected operand after '", (it - 1)->value, "'");
-				else
-					throw ParseError("Unexpected symbol '", token().value, "'");
+				return std::make_unique<PostfixOperator>(tok.value, std::move(left));
 			}
+			// infix
+			else
+			{
+				auto right = expression(prec);
 
-			return std::make_unique<InfixOperator>(tok.value, std::move(left), std::move(right));
+				if(!right)
+				{
+					if(token().type == TokenType::Invalid)
+						throw ParseError("Expected operand after '", (it - 1)->value, "'");
+					else
+						throw ParseError("Unexpected symbol '", token().value, "'");
+				}
+
+				return std::make_unique<InfixOperator>(tok.value, std::move(left), std::move(right));
+			}
 		}
 
 		case TokenType::Separator:
 		{
 			if(tok.value == "(")
 			{
+				// prevent calls on invalid tokens
+				if(is_valid_index(-2))
+				{
+					if((it - 2)->type == TokenType::Operator)
+					{
+						throw ParseError("Unexpected token '", tok.value, "'");
+					}
+				}
+
 				std::vector<std::unique_ptr<Node>> arguments;
 
 				if(token().value != ")")

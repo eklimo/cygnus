@@ -11,7 +11,7 @@ namespace Lang
 {
 	constexpr std::string_view keywords[] = {"true", "false"};
 	// descending length
-	constexpr std::string_view operators[] = {"+", "-", "*", "/"};
+	constexpr std::string_view operators[] = {"++", "--", "+", "-", "*", "/"};
 	constexpr std::string_view word_operators[] = {};
 	constexpr std::string_view separators[] = {"(", ")", ","};
 
@@ -58,7 +58,7 @@ namespace Lang
 		return str == "true" || str == "false";
 	}
 
-	// precedence
+	// operator
 
 	constexpr int left_precedence(const Token &token)
 	{
@@ -68,7 +68,9 @@ namespace Lang
 		{
 			case TokenType::Operator:
 			{
-				if(sym == "*" || sym == "/")
+				if(sym == "++" || sym == "--")
+					return 40;
+				else if(sym == "*" || sym == "/")
 					return 20;
 				else if(sym == "+" || sym == "-")
 					return 10;
@@ -96,7 +98,9 @@ namespace Lang
 			case TokenType::Operator:
 			{
 				if(sym == "+" || sym == "-")
-					return 100;
+					return 30;
+				else if(sym == "++" || sym == "--")
+					return 30;
 				break;
 			}
 			case TokenType::Separator:
@@ -120,5 +124,17 @@ namespace Lang
 		}
 
 		return -1;
+	}
+
+	constexpr bool is_postfix(const Token &token)
+	{
+		if(token.type != TokenType::Operator) return false;
+
+		const std::string_view sym = token.value;
+
+		if(sym == "++" || sym == "--")
+			return true;
+
+		return false;
 	}
 }
