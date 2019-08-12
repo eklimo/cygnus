@@ -45,34 +45,33 @@ namespace Lexer
 
 	Token tokenize_operator_separator(std::string_view::const_iterator &it, std::string_view::const_iterator end, unsigned &line, unsigned &column)
 	{
-		for(const auto &op : Lang::operators)
+		// maximum length of any operator or separator
+		constexpr int max_length = 2;
+
+		for(unsigned length = max_length; length >= 1; length--)
 		{
-			auto length = op.length();
 			std::string_view ahead(it, length);
+			bool valid = false;
+			auto type = TokenType::Invalid;
+
 			if(Lang::is_operator(ahead))
 			{
-				it += length - 1;
-				column += length - 1;
-				return
-				{
-					.type = TokenType::Operator,
-					.value = ahead,
-					.location = { line, column }
-				};
+				valid = true;
+				type = TokenType::Operator;
 			}
-		}
+			else if(Lang::is_separator(ahead))
+			{
+				valid = true;
+				type = TokenType::Separator;
+			}
 
-		for(const auto &sep : Lang::separators)
-		{
-			auto length = sep.length();
-			std::string_view ahead(it, length);
-			if(Lang::is_separator(ahead))
+			if(valid)
 			{
 				it += length - 1;
 				column += length - 1;
 				return
 				{
-					.type = TokenType::Separator,
+					.type = type,
 					.value = ahead,
 					.location = { line, column }
 				};

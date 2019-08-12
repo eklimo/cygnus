@@ -27,11 +27,11 @@ namespace Lexer
 			case TokenType::String:
 				return "str";
 			case TokenType::Identifier:
-				return "id";
+				return "idn";
 			case TokenType::Keyword:
 				return "key";
 			case TokenType::Operator:
-				return "op";
+				return "opr";
 			case TokenType::Separator:
 				return "sep";
 			default:
