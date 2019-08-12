@@ -9,11 +9,12 @@ using Lexer::TokenType;
 
 namespace Lang
 {
-	constexpr std::string_view keywords[] = {"true", "false"};
+	constexpr std::string_view keywords[] = {"true", "false", "var", "func", "return", "if", "else"};
 	// descending length
 	constexpr std::string_view operators[] = {"++", "--", "+", "-", "*", "/", "="};
 	constexpr std::string_view word_operators[] = {};
-	constexpr std::string_view separators[] = {"(", ")", ","};
+	// descending length
+	constexpr std::string_view separators[] = {"->", "(", ")", ",", "{", "}", ":"};
 
 	// utility
 

@@ -2,7 +2,7 @@
 
 #include "lang.h"
 
-Parser::Parser(std::vector<Token> &tokens)
+Parser::Parser(const std::vector<Token> &tokens)
 	: it(tokens.cbegin()),
 	  begin(tokens.cbegin()),
 	  end(tokens.cend()),
