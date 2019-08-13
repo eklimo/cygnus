@@ -2,7 +2,7 @@
 
 #include <cctype>
 
-#include "log.h"
+#include "../log.h"
 #include "../util/error.h"
 #include "lang.h"
 
@@ -24,15 +24,15 @@ namespace Lexer
 			it++;
 			length++;
 
-			column++;
+			if(*it == '\t') column += 4;
+			else column++;
+
 			if(*it == '\n' || it == end)
 			{
 				throw Util::CompilerError(initial_quote, { line, column + 1 }, "unterminated string literal");
 			}
 		}
 		// closing quotation mark
-		// it--;
-		// column--;
 		column++;
 
 		return
@@ -166,17 +166,22 @@ namespace Lexer
 		unsigned line = 1;
 		unsigned column = 0;
 
-		for(auto it = input.cbegin(); it != input.cend(); it++)
+		const auto &end = input.cend();
+		for(auto it = input.cbegin(); it != end; it++)
 		{
 			column++;
 
 			// whitespace
 			if(isspace(*it))
 			{
-				if(it != input.end() && *it == '\n')
+				if(*it == '\n')
 				{
 					line++;
 					column = 0;
+				}
+				else if(*it == '\t')
+				{
+					column += 3;
 				}
 				continue;
 			}
@@ -184,7 +189,7 @@ namespace Lexer
 			// comment
 			else if(*it == '#')
 			{
-				while(it != input.end() && *it != '\n')
+				while(it != end && *it != '\n')
 				{
 					it++;
 					column++;
@@ -196,13 +201,13 @@ namespace Lexer
 			// string literal
 			else if(*it == '"')
 			{
-				tokens.push_back(tokenize_string_literal(it, input.end(), line, column));
+				tokens.push_back(tokenize_string_literal(it, end, line, column));
 			}
 
 			// operator/separator
 			else if(ispunct(*it) && *it != '_')
 			{
-				auto token = tokenize_operator_separator(it, input.end(), line, column);
+				auto token = tokenize_operator_separator(it, end, line, column);
 				if(token.type == TokenType::Invalid)
 					throw Util::CompilerError(token.location, "unexpected symbol '", *it, "'");
 
@@ -212,13 +217,13 @@ namespace Lexer
 			// number literal
 			else if(isdigit(*it))
 			{
-				tokens.push_back(tokenize_number_literal(it, input.end(), line, column));
+				tokens.push_back(tokenize_number_literal(it, end, line, column));
 			}
 
 			// identifier/keyword/word operator
 			else if(isalpha(*it) || *it == '_')
 			{
-				tokens.push_back(tokenize_identifier_keyword(it, input.end(), line, column));
+				tokens.push_back(tokenize_identifier_keyword(it, end, line, column));
 			}
 
 			// invalid

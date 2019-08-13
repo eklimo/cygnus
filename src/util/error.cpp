@@ -4,8 +4,9 @@
 #include <sstream>
 #include <string>
 #include <iomanip>
+#include <regex>
 
-#include "log.h"
+#include "../log.h"
 
 namespace Util
 {
@@ -31,7 +32,7 @@ namespace Util
 			{
 				if((n + radius + 1 >= begin.line) && (n <= begin.line + radius - 1))
 				{
-					lines.push_back(line);
+					lines.push_back(std::regex_replace(line, std::regex("\\t"), std::string(4, ' ')));
 					if(n == begin.line - 1)
 						error_line_index = m;
 					m++;

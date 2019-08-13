@@ -1,5 +1,5 @@
 # comment
-func f(a: Int, b: String) -> Object
+	func f(a: Int, b: String) -> Object
 {
-	print("hello, world")
+	print("hello	world" a)
 }
