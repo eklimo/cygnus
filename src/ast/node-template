@@ -1,0 +1,36 @@
+abstract Node;
+Invalid : Node;
+
+abstract Expression : Node;
+abstract Value : Expression
+{
+	std::string_view value
+};
+abstract Literal : Value;
+NumberLiteral : Literal;
+StringLiteral : Literal;
+BooleanLiteral : Literal;
+Identifier : Value;
+FunctionCall : Expression
+{
+	std::unique_ptr<Node> name
+	std::vector<std::unique_ptr<Node>> arguments
+};
+
+abstract Operator : Node
+{
+	std::string_view symbol
+};
+InfixOperator : Operator
+{
+	std::unique_ptr<Node> left
+	std::unique_ptr<Node> right
+};
+PrefixOperator : Operator
+{
+	std::unique_ptr<Node> operand
+};
+PostfixOperator : Operator
+{
+	std::unique_ptr<Node> operand
+};
