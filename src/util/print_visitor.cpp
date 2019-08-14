@@ -16,11 +16,13 @@ namespace Util
 		return s;
 	}
 
+	// general
 	void PrintVisitor::visit(Invalid &node)
 	{
 		print(str.stringify(node));
 	}
 
+	// expressions
 	void PrintVisitor::visit(NumberLiteral &node)
 	{
 		print(str.stringify(node));
@@ -47,7 +49,6 @@ namespace Util
 		}
 		tab_level--;
 	}
-
 	void PrintVisitor::visit(InfixOperator &node)
 	{
 		print(str.stringify(node));
@@ -68,6 +69,36 @@ namespace Util
 		print(str.stringify(node));
 		tab_level++;
 		node.operand->accept(*this);
+		tab_level--;
+	}
+
+	// statements
+	void PrintVisitor::visit(Block &node)
+	{
+		print(str.stringify(node));
+		tab_level++;
+		for(const auto &stmt : node.statements)
+		{
+			stmt->accept(*this);
+		}
+		tab_level--;
+	}
+	void PrintVisitor::visit(Program &node)
+	{
+		print(str.stringify(node));
+		tab_level++;
+		for(const auto &stmt : node.statements)
+		{
+			stmt->accept(*this);
+		}
+		tab_level--;
+	}
+	void PrintVisitor::visit(VariableDef &node)
+	{
+		print(str.stringify(node));
+		tab_level++;
+		node.name->accept(*this);
+		node.value->accept(*this);
 		tab_level--;
 	}
 }

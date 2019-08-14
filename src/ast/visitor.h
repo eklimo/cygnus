@@ -11,6 +11,9 @@ struct FunctionCall;
 struct InfixOperator;
 struct PrefixOperator;
 struct PostfixOperator;
+struct Block;
+struct Program;
+struct VariableDef;
 
 class Visitor
 {
@@ -24,4 +27,7 @@ public:
 	virtual void visit(InfixOperator &node) = 0;
 	virtual void visit(PrefixOperator &node) = 0;
 	virtual void visit(PostfixOperator &node) = 0;
+	virtual void visit(Block &node) = 0;
+	virtual void visit(Program &node) = 0;
+	virtual void visit(VariableDef &node) = 0;
 };

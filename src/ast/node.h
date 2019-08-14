@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "visitor.h"
+
 struct Node
 {
 	virtual void accept(Visitor &v) = 0;
@@ -49,32 +50,53 @@ struct Identifier : public Value
 };
 struct FunctionCall : public Expression
 {
-	std::unique_ptr<Node> name;
-	std::vector<std::unique_ptr<Node>> arguments;
-	FunctionCall(std::unique_ptr<Node> name, std::vector<std::unique_ptr<Node>> arguments);
+	std::unique_ptr<Expression> name;
+	std::vector<std::unique_ptr<Expression>> arguments;
+	FunctionCall(std::unique_ptr<Expression> name, std::vector<std::unique_ptr<Expression>> arguments);
 	void accept(Visitor &v) override;
 };
-struct Operator : public Node
+struct Operator : public Expression
 {
 	std::string_view symbol;
 	Operator(std::string_view symbol);
 };
 struct InfixOperator : public Operator
 {
-	std::unique_ptr<Node> left;
-	std::unique_ptr<Node> right;
-	InfixOperator(std::string_view symbol, std::unique_ptr<Node> left, std::unique_ptr<Node> right);
+	std::unique_ptr<Expression> left;
+	std::unique_ptr<Expression> right;
+	InfixOperator(std::string_view symbol, std::unique_ptr<Expression> left, std::unique_ptr<Expression> right);
 	void accept(Visitor &v) override;
 };
 struct PrefixOperator : public Operator
 {
-	std::unique_ptr<Node> operand;
-	PrefixOperator(std::string_view symbol, std::unique_ptr<Node> operand);
+	std::unique_ptr<Expression> operand;
+	PrefixOperator(std::string_view symbol, std::unique_ptr<Expression> operand);
 	void accept(Visitor &v) override;
 };
 struct PostfixOperator : public Operator
 {
-	std::unique_ptr<Node> operand;
-	PostfixOperator(std::string_view symbol, std::unique_ptr<Node> operand);
+	std::unique_ptr<Expression> operand;
+	PostfixOperator(std::string_view symbol, std::unique_ptr<Expression> operand);
+	void accept(Visitor &v) override;
+};
+struct Statement : public Node
+{
+};
+struct Block : public Statement
+{
+	std::vector<std::unique_ptr<Statement>> statements;
+	Block(std::vector<std::unique_ptr<Statement>> statements);
+	void accept(Visitor &v) override;
+};
+struct Program : public Block
+{
+	using Block::Block;
+	void accept(Visitor &v) override;
+};
+struct VariableDef : public Statement
+{
+	std::unique_ptr<Expression> name;
+	std::unique_ptr<Expression> value;
+	VariableDef(std::unique_ptr<Expression> name, std::unique_ptr<Expression> value);
 	void accept(Visitor &v) override;
 };

@@ -19,7 +19,7 @@ class Parser
 {
 public:
 	explicit Parser(const std::vector<Token> &tokens);
-	std::unique_ptr<Node> parse();
+	std::unique_ptr<Program> parse();
 
 private:
 	std::vector<Token>::const_iterator it;
@@ -33,7 +33,11 @@ private:
 	bool match(std::string_view value);
 	bool match(TokenType type, std::string_view value);
 
-	std::unique_ptr<Node> expression(int rbp = 0);
-	std::unique_ptr<Node> null_denotation(const Token &token);
-	std::unique_ptr<Node> left_denotation(const Token &token, std::unique_ptr<Node> &left);
+	std::unique_ptr<Expression> expression(int rbp = 0);
+	std::unique_ptr<Expression> null_denotation(const Token &token);
+	std::unique_ptr<Expression> left_denotation(const Token &token, std::unique_ptr<Expression> &left);
+
+	std::unique_ptr<Program> program();
+	std::unique_ptr<Statement> statement();
+	std::unique_ptr<VariableDef> variable_definition();
 };

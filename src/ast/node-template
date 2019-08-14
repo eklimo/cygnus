@@ -13,24 +13,35 @@ BooleanLiteral : Literal;
 Identifier : Value;
 FunctionCall : Expression
 {
-	std::unique_ptr<Node> name
-	std::vector<std::unique_ptr<Node>> arguments
+	std::unique_ptr<Expression> name
+	std::vector<std::unique_ptr<Expression>> arguments
 };
-
-abstract Operator : Node
+abstract Operator : Expression
 {
 	std::string_view symbol
 };
 InfixOperator : Operator
 {
-	std::unique_ptr<Node> left
-	std::unique_ptr<Node> right
+	std::unique_ptr<Expression> left
+	std::unique_ptr<Expression> right
 };
 PrefixOperator : Operator
 {
-	std::unique_ptr<Node> operand
+	std::unique_ptr<Expression> operand
 };
 PostfixOperator : Operator
 {
-	std::unique_ptr<Node> operand
+	std::unique_ptr<Expression> operand
+};
+
+abstract Statement : Node;
+Block : Statement
+{
+	std::vector<std::unique_ptr<Statement>> statements
+};
+Program : Block;
+VariableDef : Statement
+{
+	std::unique_ptr<Expression> name
+	std::unique_ptr<Expression> value
 };

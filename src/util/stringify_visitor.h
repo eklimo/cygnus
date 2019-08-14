@@ -14,17 +14,23 @@ namespace Util
 	public:
 		explicit StringifyVisitor(bool verbose = false);
 
-		virtual void visit(Invalid &node);
+		// general
+		void visit(Invalid &node);
 
-		virtual void visit(NumberLiteral &node);
-		virtual void visit(StringLiteral &node);
-		virtual void visit(BooleanLiteral &node);
-		virtual void visit(Identifier &node);
-		virtual void visit(FunctionCall &node);
+		// expressions
+		void visit(NumberLiteral &node);
+		void visit(StringLiteral &node);
+		void visit(BooleanLiteral &node);
+		void visit(Identifier &node);
+		void visit(FunctionCall &node);
+		void visit(InfixOperator &node);
+		void visit(PrefixOperator &node);
+		void visit(PostfixOperator &node);
 
-		virtual void visit(InfixOperator &node);
-		virtual void visit(PrefixOperator &node);
-		virtual void visit(PostfixOperator &node);
+		// statements
+		void visit(Block &node);
+		void visit(Program &node);
+		void visit(VariableDef &node);
 
 		std::string stringify(Node &node);
 	private:

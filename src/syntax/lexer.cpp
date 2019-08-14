@@ -29,7 +29,7 @@ namespace Lexer
 
 			if(*it == '\n' || it == end)
 			{
-				throw Util::CompilerError(initial_quote, { line, column + 1 }, "unterminated string literal");
+				throw Util::CompilerError(initial_quote, { line, column + (*it == '\n' ? 1 : 0) }, "unterminated string literal");
 			}
 		}
 		// closing quotation mark

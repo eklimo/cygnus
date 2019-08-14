@@ -20,11 +20,13 @@ namespace Util
 		return get();
 	}
 
+	// general
 	void StringifyVisitor::visit(Invalid &node)
 	{
 		value << (verbose ? "Invalid" : "inv");
 	}
 
+	// expressions
 	void StringifyVisitor::visit(NumberLiteral &node)
 	{
 		if(verbose)
@@ -62,7 +64,6 @@ namespace Util
 		else
 			value << name << "()";
 	}
-
 	void StringifyVisitor::visit(InfixOperator &node)
 	{
 		if(verbose)
@@ -83,5 +84,30 @@ namespace Util
 			value << "Postfix operator '" << node.symbol << "'";
 		else
 			value << node.symbol;
+	}
+
+	// statements
+	void StringifyVisitor::visit(Block &node)
+	{
+		if(verbose)
+			value << "Block";
+		else
+			value << "<block>";
+	}
+	void StringifyVisitor::visit(Program &node)
+	{
+		if(verbose)
+			value << "Program";
+		else
+			value << "<program>";
+	}
+	void StringifyVisitor::visit(VariableDef &node)
+	{
+		auto name = stringify(*node.name.get());
+
+		if(verbose)
+			value << "Variable definition '" << name << "'";
+		else
+			value << "var";
 	}
 }
