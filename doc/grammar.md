@@ -3,33 +3,53 @@
 ```
 # main
 program = statement*
-statement = variable-definition
-          | variable-assignment
-          | function-definition
-          | return-statement
-          | if-statement
+statement = declaration-statement
           | expression-statement
 
-# statements
-variable-definition = "var" IDENTIFIER ("=" expression)|type-annotation
-variable-assignment = IDENTIFIER "=" expression
-
-function-definition = "func" IDENTIFIER "(" (parameter ("," parameter)*)? ")" ("->" type)? "{" statement* "}"
-return-statement = "return" expression?
-
-if-statement = "if" expression block ("else" block)?
+declaration-statement = function-definition
+                      | variable-definition
 
 expression-statement = expression
 
+
+# declaration statements
+function-definition = "func" IDENTIFIER "(" (parameter ("," parameter)*)? ")" ("->" type)? "{" statement* "}"
+
+variable-definition = "var" IDENTIFIER type-annotation|("=" expression)
+
+
 # expressions
-expression = value POSTFIX-OPERATOR* (INFIX-OPERATOR expression)?
-value = "(" expression ")"
-      | PREFIX-OPERATOR+ expression
-      | IDENTIFIER ("(" (expression ("," expression)*)? ")")?
-      | literal
+expression = infix-operator-expression
+           | prefix-operator-expression
+           | postfix-operator-expression
+           | group-expression
+           | call-expression
+           | return-expression
+           | if-expression
+           | while-expression
+           | IDENTIFIER
+           | literal
+
+infix-operator-expression = expression INFIX-OPERATOR expression
+
+prefix-operator-expression = PREFIX-OPERATOR expression
+
+postfix-operator-expression = expression POSTFIX-OPERATOR
+
+group-expression = "(" expression ")"
+
+call-expression = IDENTIFIER "(" (expression ("," expression)*)? ")"
+
+return-expression = "return" expression?
+
+if-expression = "if" expression block ("else" block)?
+
+while-expression = "while" expression block
+
 literal = NUMBER
         | STRING
         | BOOLEAN
+
 
 # general
 block = "{" statement* "}"
