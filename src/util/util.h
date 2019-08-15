@@ -16,5 +16,7 @@ namespace Util
 
 		bool operator==(const FileLocation &rhs) const;
 		bool operator!=(const FileLocation &rhs) const;
+
+		friend std::ostream &operator<<(std::ostream &stream, const FileLocation &loc);
 	};
 }

@@ -1,24 +1,37 @@
 #include "error.h"
 
-#include <vector>
-#include <sstream>
 #include <string>
 #include <iomanip>
 #include <regex>
+#include <stdexcept>
 
 #include "../log.h"
 
 namespace Util
 {
-	std::string CompilerError::what() noexcept
+	std::string Error::what() noexcept
 	{
 		return message.str();
 	}
 
-	void CompilerError::print(std::string_view file, std::string_view source)
+	void Error::print(std::string_view file, std::string_view source)
 	{
-		constexpr int radius = 1;
 		std::stringstream stream;
+
+		if(begin.line == 0 || begin.column == 0)
+		{
+			stream << "Invalid file location 'begin': ";
+			stream << begin;
+			throw std::out_of_range(stream.str());
+		}
+		else if(end.line == 0 || end.column == 0)
+		{
+			stream << "Invalid file location 'end': ";
+			stream << end;
+			throw std::out_of_range(stream.str());
+		}
+
+		constexpr int radius = 1;
 
 		unsigned error_line_index = -1;
 
@@ -32,6 +45,7 @@ namespace Util
 			{
 				if((n + radius + 1 >= begin.line) && (n <= begin.line + radius - 1))
 				{
+					// standardize tab size
 					lines.push_back(std::regex_replace(line, std::regex("\\t"), std::string(4, ' ')));
 					if(n == begin.line - 1)
 						error_line_index = m;
@@ -43,9 +57,8 @@ namespace Util
 		stream.str(std::string());
 		stream.clear();
 
+		// format
 		int side_width = std::to_string(begin.line + 1 + radius).length();
-
-		// print lines
 		for(size_t i = 0; i < lines.size(); i++)
 		{
 			auto &line = lines[i];

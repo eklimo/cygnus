@@ -2,53 +2,13 @@
 
 #include "lang.h"
 
+using Util::Error;
+
 Parser::Parser(const std::vector<Token> &tokens)
 	: it(tokens.cbegin()),
 	  begin(tokens.cbegin()),
-	  end(tokens.cend()),
-	  stringifier()
+	  end(tokens.cend())
 {}
-
-template<typename... Args>
-void errorAfter(const std::vector<Lexer::Token>::const_iterator it, Args &&...args)
-{
-	if(it->type == TokenType::String)
-	{
-		Util::FileLocation loc(
-		    it->location.line,
-		    it->location.column + it->value.length() + 1 + 1
-		);
-		throw Util::CompilerError(loc, std::forward<Args>(args)...);
-	}
-
-	Util::FileLocation loc(
-	    it->location.line,
-	    it->location.column + (it->type == TokenType::Invalid ? 0 : it->value.length())
-	);
-	throw Util::CompilerError(loc, std::forward<Args>(args)...);
-}
-template<typename... Args>
-void errorAt(const std::vector<Lexer::Token>::const_iterator it, Args &&...args)
-{
-	if(it->type == TokenType::Invalid)
-	{
-		errorAfter(it - 1, std::forward<Args>(args)...);
-		return;
-	}
-
-	if(it->type == TokenType::String)
-	{
-		auto begin = it->location;
-		Util::FileLocation end(
-		    it->location.line,
-		    it->location.column + 1 + it->value.length() + 1
-		);
-		throw Util::CompilerError(begin, end, std::forward<Args>(args)...);
-	}
-	auto begin = it->location;
-	auto end = Util::FileLocation(it->location.line, it->location.column + it->value.length());
-	throw Util::CompilerError(begin, end, std::forward<Args>(args)...);
-}
 
 // main
 
@@ -57,7 +17,7 @@ std::unique_ptr<Program> Parser::parse()
 	auto root = program();
 
 	if(it < end)
-		errorAt(it, "unexpected symbol '", it->value, "'");
+		throw Error::At(it, "unexpected symbol '", it->value, "'");
 
 	return root;
 }
@@ -84,7 +44,7 @@ std::unique_ptr<Expression> Parser::null_denotation(const Token &tok)
 			if(Lang::is_boolean(tok.value))
 				return std::make_unique<BooleanLiteral>(tok.value);
 			else
-				errorAt(it - 1, "unexpected symbol '", tok.value, "'");
+				throw Error::At(it - 1, "unexpected symbol '", tok.value, "'");
 		}
 
 		case TokenType::Operator:
@@ -93,11 +53,11 @@ std::unique_ptr<Expression> Parser::null_denotation(const Token &tok)
 			if(!operand)
 			{
 				if((Lang::null_precedence(tok) != -1 && Lang::left_precedence(tok) != -1) && token().type != TokenType::Invalid)
-					errorAt(it, "unexpected symbol '", token().value, "'");
+					throw Error::At(it, "unexpected symbol '", token().value, "'");
 				else if(token().type == TokenType::Invalid)
-					errorAfter(it - 1, "expected operand after '", (it - 1)->value, "'");
+					throw Error::After(it - 1, "expected operand after '", (it - 1)->value, "'");
 				else
-					errorAt(it, "unexpected symbol '", token().value, "'");
+					throw Error::At(it, "unexpected symbol '", token().value, "'");
 			}
 
 			return std::make_unique<PrefixOperator>(tok.value, std::move(operand));
@@ -111,17 +71,17 @@ std::unique_ptr<Expression> Parser::null_denotation(const Token &tok)
 				if(!expr)
 				{
 					if(token().type == TokenType::Invalid || token().value == ")")
-						errorAfter(it - 1, "expected expression after '", (it - 1)->value, "'");
+						throw Error::After(it - 1, "expected expression after '", (it - 1)->value, "'");
 					else
-						errorAt(it, "unexpected symbol '", token().value, "'");
+						throw Error::At(it, "unexpected symbol '", token().value, "'");
 				}
 
 				if(!match(")"))
 				{
 					if(token().type == TokenType::Invalid)
-						errorAfter(it - 1, "expected ')' after '", (it - 1)->value, "'");
+						throw Error::After(it - 1, "expected ')' after '", (it - 1)->value, "'");
 					else
-						errorAt(it, "unexpected symbol '", token().value, "'");
+						throw Error::At(it, "unexpected symbol '", token().value, "'");
 				}
 
 				return expr;
@@ -158,9 +118,9 @@ std::unique_ptr<Expression> Parser::left_denotation(const Token &tok, std::uniqu
 				if(!right)
 				{
 					if(token().type == TokenType::Invalid)
-						errorAfter(it - 1, "expected operand after '", (it - 1)->value, "'");
+						throw Error::After(it - 1, "expected operand after '", (it - 1)->value, "'");
 					else
-						errorAt(it, "unexpected symbol '", token().value, "'");
+						throw Error::At(it, "unexpected symbol '", token().value, "'");
 				}
 
 				return std::make_unique<InfixOperator>(tok.value, std::move(left), std::move(right));
@@ -176,7 +136,7 @@ std::unique_ptr<Expression> Parser::left_denotation(const Token &tok, std::uniqu
 				{
 					if((it - 2)->type != TokenType::Identifier)
 					{
-						errorAt(it - 1, "unexpected symbol '", tok.value, "'");
+						throw Error::At(it - 1, "unexpected symbol '", tok.value, "'");
 					}
 				}
 
@@ -190,9 +150,9 @@ std::unique_ptr<Expression> Parser::left_denotation(const Token &tok, std::uniqu
 						if(!arg)
 						{
 							if(token().type == TokenType::Invalid)
-								errorAfter(it - 1, "expected expression after '", (it - 1)->value, "'");
+								throw Error::After(it - 1, "expected expression after '", (it - 1)->value, "'");
 							else
-								errorAt(it, "unexpected symbol '", token().value, "'");
+								throw Error::At(it, "unexpected symbol '", token().value, "'");
 						}
 						arguments.push_back(std::move(arg));
 
@@ -203,7 +163,7 @@ std::unique_ptr<Expression> Parser::left_denotation(const Token &tok, std::uniqu
 
 						if(token().value == ")")
 						{
-							errorAt(it, "unexpected symbol '", it->value, "'");
+							throw Error::At(it, "unexpected symbol '", it->value, "'");
 						}
 					}
 				}
@@ -211,9 +171,9 @@ std::unique_ptr<Expression> Parser::left_denotation(const Token &tok, std::uniqu
 				if(!match(")"))
 				{
 					if(token().type == TokenType::Invalid)
-						errorAfter(it - 1, "expected ')' after '", (it - 1)->value, "'");
+						throw Error::After(it - 1, "expected ')' after '", (it - 1)->value, "'");
 					else
-						errorAt(it, "unexpected symbol '", token().value, "'");
+						throw Error::At(it, "unexpected symbol '", token().value, "'");
 				}
 
 				return std::make_unique<FunctionCall>(std::move(left), std::move(arguments));
@@ -247,6 +207,7 @@ std::unique_ptr<Expression> Parser::expression(int rbp)
 }
 
 // statements
+
 std::unique_ptr<Program> Parser::program()
 {
 	std::vector<std::unique_ptr<Statement>> statements;
@@ -283,19 +244,21 @@ std::unique_ptr<VariableDef> Parser::variable_definition()
 				if(!value)
 				{
 					if(token().type == TokenType::Invalid)
-						errorAfter(it - 1, "expected expression after '", equals_token.value, "'");
+						throw Error::After(it - 1, "expected expression after '", equals_token.value, "'");
 					else
-						errorAt(it, "unexpected symbol '", token().value, "'");
+						throw Error::At(it, "unexpected symbol '", token().value, "'");
 				}
 
 				return std::make_unique<VariableDef>(std::move(name), std::move(value));
 			}
-			else errorAfter(it - 1, "expected '=' after '", name_token.value, "'");
+			else throw Error::After(it - 1, "expected '=' after '", name_token.value, "'");
 		}
-		else errorAfter(it - 1, "expected identifier after 'var'");
+		else throw Error::After(it - 1, "expected identifier after 'var'");
 	}
 	return nullptr;
 }
+
+// general
 
 // utility
 

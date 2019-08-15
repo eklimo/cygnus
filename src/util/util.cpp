@@ -30,4 +30,9 @@ namespace Util
 	{
 		return !(*this == rhs);
 	}
+
+	std::ostream &operator<<(std::ostream &stream, const FileLocation &loc)
+	{
+		return stream << loc.line << ":" << loc.column;
+	}
 }

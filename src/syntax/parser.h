@@ -24,7 +24,6 @@ public:
 private:
 	std::vector<Token>::const_iterator it;
 	const std::vector<Token>::const_iterator begin, end;
-	Util::StringifyVisitor stringifier;
 
 	const Token &token() const;
 	bool advance();
@@ -33,11 +32,15 @@ private:
 	bool match(std::string_view value);
 	bool match(TokenType type, std::string_view value);
 
+	// expressions
 	std::unique_ptr<Expression> expression(int rbp = 0);
 	std::unique_ptr<Expression> null_denotation(const Token &token);
 	std::unique_ptr<Expression> left_denotation(const Token &token, std::unique_ptr<Expression> &left);
 
+	// statements
 	std::unique_ptr<Program> program();
 	std::unique_ptr<Statement> statement();
 	std::unique_ptr<VariableDef> variable_definition();
+
+	// general
 };

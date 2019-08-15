@@ -18,7 +18,7 @@ namespace Compiler
 		{
 			tokens = Lexer::tokenize(source);
 		}
-		catch(Util::CompilerError &e)
+		catch(Util::Error &e)
 		{
 			e.print(file, source);
 			std::exit(0);
@@ -38,7 +38,7 @@ namespace Compiler
 		{
 			ast = parser.parse();
 		}
-		catch(Util::CompilerError &e)
+		catch(Util::Error &e)
 		{
 			e.print(file, source);
 			std::exit(0);

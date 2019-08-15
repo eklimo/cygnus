@@ -29,7 +29,7 @@ namespace Lexer
 
 			if(*it == '\n' || it == end)
 			{
-				throw Util::CompilerError(initial_quote, { line, column + (*it == '\n' ? 1 : 0) }, "unterminated string literal");
+				throw Util::Error(initial_quote, { line, column + (*it == '\n' ? 1 : 0) }, "unterminated string literal");
 			}
 		}
 		// closing quotation mark
@@ -116,7 +116,11 @@ namespace Lexer
 		{
 			.type = TokenType::Number,
 			.value = std::string_view(begin, length),
-			.location = { line, column }
+			.location =
+			{
+				.line = line,
+				.column = column - length + 1
+			}
 		};
 	}
 
@@ -209,7 +213,7 @@ namespace Lexer
 			{
 				auto token = tokenize_operator_separator(it, end, line, column);
 				if(token.type == TokenType::Invalid)
-					throw Util::CompilerError(token.location, "unexpected symbol '", *it, "'");
+					throw Util::Error(token.location, "unexpected symbol '", *it, "'");
 
 				tokens.push_back(token);
 			}
@@ -229,7 +233,7 @@ namespace Lexer
 			// invalid
 			else
 			{
-				throw Util::CompilerError({ line, column }, "unexpected symbol '", *it, "'");
+				throw Util::Error({ line, column }, "unexpected symbol '", *it, "'");
 			}
 		}
 
