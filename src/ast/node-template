@@ -13,7 +13,7 @@ BooleanLiteral : Literal;
 Identifier : Value;
 FunctionCall : Expression
 {
-	std::unique_ptr<Expression> name
+	std::unique_ptr<Identifier> name
 	std::vector<std::unique_ptr<Expression>> arguments
 };
 abstract Operator : Expression
@@ -35,6 +35,10 @@ PostfixOperator : Operator
 };
 
 abstract Statement : Node;
+ExprStatement : Statement
+{
+	std::unique_ptr<Expression> expr
+};
 Block : Statement
 {
 	std::vector<std::unique_ptr<Statement>> statements
@@ -42,6 +46,6 @@ Block : Statement
 Program : Block;
 VariableDef : Statement
 {
-	std::unique_ptr<Expression> name
+	std::unique_ptr<Identifier> name
 	std::unique_ptr<Expression> value
 };

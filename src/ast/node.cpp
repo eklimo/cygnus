@@ -27,7 +27,7 @@ void Identifier::accept(Visitor &v)
 	v.visit(*this);
 }
 
-FunctionCall::FunctionCall(std::unique_ptr<Expression> _name, std::vector<std::unique_ptr<Expression>> _arguments)
+FunctionCall::FunctionCall(std::unique_ptr<Identifier> _name, std::vector<std::unique_ptr<Expression>> _arguments)
 	: name(std::move(_name)), arguments(std::move(_arguments))
 {
 }
@@ -68,6 +68,15 @@ void PostfixOperator::accept(Visitor &v)
 	v.visit(*this);
 }
 
+ExprStatement::ExprStatement(std::unique_ptr<Expression> _expr)
+	: expr(std::move(_expr))
+{
+}
+void ExprStatement::accept(Visitor &v)
+{
+	v.visit(*this);
+}
+
 Block::Block(std::vector<std::unique_ptr<Statement>> _statements)
 	: statements(std::move(_statements))
 {
@@ -81,7 +90,7 @@ void Program::accept(Visitor &v)
 	v.visit(*this);
 }
 
-VariableDef::VariableDef(std::unique_ptr<Expression> _name, std::unique_ptr<Expression> _value)
+VariableDef::VariableDef(std::unique_ptr<Identifier> _name, std::unique_ptr<Expression> _value)
 	: name(std::move(_name)), value(std::move(_value))
 {
 }

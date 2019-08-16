@@ -73,7 +73,7 @@ namespace Lexer
 				{
 					.type = type,
 					.value = ahead,
-					.location = { line, column }
+					.location = { line, column - length + 1 }
 				};
 			}
 		}

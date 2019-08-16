@@ -43,7 +43,7 @@ namespace Compiler
 			e.print(file, source);
 			std::exit(0);
 		}
-		Util::PrintVisitor printer(true);
+		Util::PrintVisitor printer;
 		Logger::get().debug("AST:");
 		ast->accept(printer);
 	}

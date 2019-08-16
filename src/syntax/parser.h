@@ -25,22 +25,33 @@ private:
 	std::vector<Token>::const_iterator it;
 	const std::vector<Token>::const_iterator begin, end;
 
+	std::unique_ptr<Program> program();
+	std::unique_ptr<Statement> statement();
+	std::unique_ptr<Statement> expr_statement();
+
+	// statements
+	std::unique_ptr<VariableDef> variable_def();
+
+	// expressions
+	std::unique_ptr<Expression> expression(int rbp = 0);
+	std::unique_ptr<Expression> null_denotation(const Token &token);
+	std::unique_ptr<Expression> left_denotation(const Token &token, std::unique_ptr<Expression> left);
+
+	std::unique_ptr<Expression> prefix_operator_expr(const Token &token);
+	std::unique_ptr<Expression> infix_operator_expr(const Token &token, std::unique_ptr<Expression> left);
+	std::unique_ptr<Expression> postfix_operator_expr(const Token &token, std::unique_ptr<Expression> left);
+	std::unique_ptr<Expression> group_expr(const Token &token);
+	std::unique_ptr<Expression> call_expr(const Token &token, std::unique_ptr<Expression> left);
+	std::unique_ptr<Expression> literal(const Token &token);
+
+	// utility
 	const Token &token() const;
+	const Token &last_token() const;
 	bool advance();
 	bool is_valid_index(int n) const;
 	bool match(TokenType type);
 	bool match(std::string_view value);
 	bool match(TokenType type, std::string_view value);
-
-	// expressions
-	std::unique_ptr<Expression> expression(int rbp = 0);
-	std::unique_ptr<Expression> null_denotation(const Token &token);
-	std::unique_ptr<Expression> left_denotation(const Token &token, std::unique_ptr<Expression> &left);
-
-	// statements
-	std::unique_ptr<Program> program();
-	std::unique_ptr<Statement> statement();
-	std::unique_ptr<VariableDef> variable_definition();
 
 	// general
 };

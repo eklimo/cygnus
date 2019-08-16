@@ -12,10 +12,12 @@ namespace Util
 	class PrintVisitor : public Visitor
 	{
 	public:
-		explicit PrintVisitor(bool verbose = false);
+		// main
+		void visit(Program &node);
 
-		// general
-		void visit(Invalid &node);
+		// statements
+		void visit(ExprStatement &node);
+		void visit(VariableDef &node);
 
 		// expressions
 		void visit(NumberLiteral &node);
@@ -27,10 +29,9 @@ namespace Util
 		void visit(PrefixOperator &node);
 		void visit(PostfixOperator &node);
 
-		// statements
+		// general
+		void visit(Invalid &node);
 		void visit(Block &node);
-		void visit(Program &node);
-		void visit(VariableDef &node);
 
 	private:
 		unsigned tab_level = 0;

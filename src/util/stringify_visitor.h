@@ -12,10 +12,12 @@ namespace Util
 	class StringifyVisitor : public Visitor
 	{
 	public:
-		explicit StringifyVisitor(bool verbose = false);
+		// main
+		void visit(Program &node);
 
-		// general
-		void visit(Invalid &node);
+		// statements
+		void visit(ExprStatement &node);
+		void visit(VariableDef &node);
 
 		// expressions
 		void visit(NumberLiteral &node);
@@ -27,16 +29,13 @@ namespace Util
 		void visit(PrefixOperator &node);
 		void visit(PostfixOperator &node);
 
-		// statements
+		// general
+		void visit(Invalid &node);
 		void visit(Block &node);
-		void visit(Program &node);
-		void visit(VariableDef &node);
 
 		std::string stringify(Node &node);
 	private:
 		std::stringstream value;
-		const bool verbose;
-
 		std::string get();
 	};
 }

@@ -2,10 +2,6 @@
 
 namespace Util
 {
-	PrintVisitor::PrintVisitor(bool verbose)
-		: str(verbose)
-	{}
-
 	const std::string PrintVisitor::prefix_tab() const
 	{
 		std::string s = "";
@@ -16,13 +12,39 @@ namespace Util
 		return s;
 	}
 
-	// general
-	void PrintVisitor::visit(Invalid &node)
+	// main
+
+	void PrintVisitor::visit(Program &node)
 	{
 		print(str.stringify(node));
+		tab_level++;
+		for(const auto &stmt : node.statements)
+		{
+			stmt->accept(*this);
+		}
+		tab_level--;
+	}
+
+	// statements
+
+	void PrintVisitor::visit(ExprStatement &node)
+	{
+		print(str.stringify(node));
+		tab_level++;
+		node.expr->accept(*this);
+		tab_level--;
+	}
+	void PrintVisitor::visit(VariableDef &node)
+	{
+		print(str.stringify(node));
+		tab_level++;
+		node.name->accept(*this);
+		node.value->accept(*this);
+		tab_level--;
 	}
 
 	// expressions
+
 	void PrintVisitor::visit(NumberLiteral &node)
 	{
 		print(str.stringify(node));
@@ -72,7 +94,12 @@ namespace Util
 		tab_level--;
 	}
 
-	// statements
+	// general
+
+	void PrintVisitor::visit(Invalid &node)
+	{
+		print(str.stringify(node));
+	}
 	void PrintVisitor::visit(Block &node)
 	{
 		print(str.stringify(node));
@@ -81,24 +108,6 @@ namespace Util
 		{
 			stmt->accept(*this);
 		}
-		tab_level--;
-	}
-	void PrintVisitor::visit(Program &node)
-	{
-		print(str.stringify(node));
-		tab_level++;
-		for(const auto &stmt : node.statements)
-		{
-			stmt->accept(*this);
-		}
-		tab_level--;
-	}
-	void PrintVisitor::visit(VariableDef &node)
-	{
-		print(str.stringify(node));
-		tab_level++;
-		node.name->accept(*this);
-		node.value->accept(*this);
 		tab_level--;
 	}
 }

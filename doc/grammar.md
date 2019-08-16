@@ -6,21 +6,21 @@ program = statement*
 statement = declaration-statement
           | expression-statement
 
-declaration-statement = function-definition
-                      | variable-definition
+declaration-statement = variable-definition
+                      | function-definition
 
 expression-statement = expression
 
 
 # declaration statements
-function-definition = "func" IDENTIFIER "(" (parameter ("," parameter)*)? ")" ("->" type)? "{" statement* "}"
-
 variable-definition = "var" IDENTIFIER type-annotation|("=" expression)
+
+function-definition = "func" IDENTIFIER "(" (parameter ("," parameter)*)? ")" ("->" type)? "{" statement* "}"
 
 
 # expressions
-expression = infix-operator-expression
-           | prefix-operator-expression
+expression = prefix-operator-expression
+           | infix-operator-expression
            | postfix-operator-expression
            | group-expression
            | call-expression
@@ -30,9 +30,9 @@ expression = infix-operator-expression
            | IDENTIFIER
            | literal
 
-infix-operator-expression = expression INFIX-OPERATOR expression
-
 prefix-operator-expression = PREFIX-OPERATOR expression
+
+infix-operator-expression = expression INFIX-OPERATOR expression
 
 postfix-operator-expression = expression POSTFIX-OPERATOR
 
@@ -53,7 +53,6 @@ literal = NUMBER
 
 # general
 block = "{" statement* "}"
-      | statement
 parameter = IDENTIFIER type-annotation
 type-annotation = ":" type
 type = IDENTIFIER

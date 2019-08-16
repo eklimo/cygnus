@@ -50,9 +50,9 @@ struct Identifier : public Value
 };
 struct FunctionCall : public Expression
 {
-	std::unique_ptr<Expression> name;
+	std::unique_ptr<Identifier> name;
 	std::vector<std::unique_ptr<Expression>> arguments;
-	FunctionCall(std::unique_ptr<Expression> name, std::vector<std::unique_ptr<Expression>> arguments);
+	FunctionCall(std::unique_ptr<Identifier> name, std::vector<std::unique_ptr<Expression>> arguments);
 	void accept(Visitor &v) override;
 };
 struct Operator : public Expression
@@ -82,6 +82,12 @@ struct PostfixOperator : public Operator
 struct Statement : public Node
 {
 };
+struct ExprStatement : public Statement
+{
+	std::unique_ptr<Expression> expr;
+	ExprStatement(std::unique_ptr<Expression> expr);
+	void accept(Visitor &v) override;
+};
 struct Block : public Statement
 {
 	std::vector<std::unique_ptr<Statement>> statements;
@@ -95,8 +101,8 @@ struct Program : public Block
 };
 struct VariableDef : public Statement
 {
-	std::unique_ptr<Expression> name;
+	std::unique_ptr<Identifier> name;
 	std::unique_ptr<Expression> value;
-	VariableDef(std::unique_ptr<Expression> name, std::unique_ptr<Expression> value);
+	VariableDef(std::unique_ptr<Identifier> name, std::unique_ptr<Expression> value);
 	void accept(Visitor &v) override;
 };
