@@ -39,7 +39,21 @@ namespace Util
 		print(str.stringify(node));
 		tab_level++;
 		node.name->accept(*this);
-		node.value->accept(*this);
+		if(node.type) node.type->accept(*this);
+		if(node.value) node.value->accept(*this);
+		tab_level--;
+	}
+	void PrintVisitor::visit(FunctionDef &node)
+	{
+		print(str.stringify(node));
+		tab_level++;
+		node.name->accept(*this);
+		for(const auto &param : node.parameters)
+		{
+			param->accept(*this);
+		}
+		node.return_type->accept(*this);
+		node.body->accept(*this);
 		tab_level--;
 	}
 
@@ -109,5 +123,17 @@ namespace Util
 			stmt->accept(*this);
 		}
 		tab_level--;
+	}
+	void PrintVisitor::visit(Parameter &node)
+	{
+		print(str.stringify(node));
+		tab_level++;
+		node.name->accept(*this);
+		node.type->accept(*this);
+		tab_level--;
+	}
+	void PrintVisitor::visit(Type &node)
+	{
+		print(str.stringify(node));
 	}
 }

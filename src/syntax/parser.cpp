@@ -51,6 +51,7 @@ std::unique_ptr<Statement> Parser::statement()
 	if
 	(
 	    (stmt = variable_def()) ||
+	    (stmt = function_def()) ||
 	    (stmt = expr_statement())
 	)
 		return stmt;
@@ -71,18 +72,20 @@ std::unique_ptr<Statement> Parser::expr_statement()
 
 std::unique_ptr<VariableDef> Parser::variable_def()
 {
-	if(match(TokenType::Keyword, "var"))
+	if(match("var"))
 	{
-		auto name_token = token();
 		if(match(TokenType::Identifier))
 		{
-			auto name = std::make_unique<Identifier>(name_token.value);
+			auto name = std::make_unique<Identifier>(last_token().value);
+			auto typ = type_annotation();
+
+			// value, optional type annotation
 			if(match("="))
 			{
 				auto value = expression();
 				if(value)
 				{
-					return std::make_unique<VariableDef>(std::move(name), std::move(value));
+					return std::make_unique<VariableDef>(std::move(name), typ ? std::move(typ) : nullptr, std::move(value));
 				}
 				else
 				{
@@ -92,10 +95,122 @@ std::unique_ptr<VariableDef> Parser::variable_def()
 						throw Error::At(it, "unexpected symbol '", token().value, "'");
 				}
 			}
-			else throw Error::After(it - 1, "expected '=' after '", name_token.value, "'");
+			// type annotation only
+			else if(typ)
+			{
+				return std::make_unique<VariableDef>(std::move(name), std::move(typ), nullptr);
+			}
+			else
+			{
+				if(token().type == TokenType::Invalid)
+					throw Error::After(it - 1, "expected '=' after '", last_token().value, "'");
+				else
+					throw Error::At(it, "unexpected symbol '", token().value, "'");
+			}
+
 		}
-		else throw Error::After(it - 1, "expected identifier after 'var'");
+		else
+		{
+			if(token().type == TokenType::Invalid)
+				throw Error::After(it - 1, "expected identifier after 'var'");
+			else
+				throw Error::At(it, "unexpected symbol '", token().value, "'");
+		}
 	}
+	return nullptr;
+}
+
+std::unique_ptr<FunctionDef> Parser::function_def()
+{
+	if(match("func"))
+	{
+		if(match(TokenType::Identifier))
+		{
+			auto name = std::make_unique<Identifier>(last_token().value);
+			if(match("("))
+			{
+				std::vector<std::unique_ptr<Parameter>> parameters;
+
+				if(token().value != ")")
+				{
+					while(true)
+					{
+						auto param = parameter();
+						if(!param)
+						{
+							if(token().type == TokenType::Invalid)
+								throw Error::After(it - 1, "expected parameter or ')' after '", last_token().value, "'");
+							else
+								throw Error::At(it, "unexpected symbol '", token().value, "'");
+						}
+						parameters.push_back(std::move(param));
+
+						if(token().value != ",")
+							break;
+
+						match(",");
+
+						if(token().value == ")")
+							throw Error::At(it, "unexpected symbol '", it->value, "'");
+					}
+				}
+
+				if(!match(")"))
+				{
+					if(token().type == TokenType::Invalid)
+						throw Error::After(it - 1, "expected ')' after '", last_token().value, "'");
+					else
+						throw Error::At(it, "unexpected symbol '", token().value, "'");
+				}
+
+				std::unique_ptr<Type> typ = nullptr;
+				if(match("->"))
+				{
+					typ = type();
+					if(!typ)
+					{
+						if(token().type == TokenType::Invalid)
+							throw Error::After(it - 1, "expected type after '", last_token().value, "'");
+						else
+							throw Error::At(it, "unexpected symbol '", token().value, "'");
+					}
+				}
+				else
+				{
+					// infer no return
+					typ = std::make_unique<Type>("()");
+				}
+
+				auto body = block();
+				if(body)
+				{
+					return std::make_unique<FunctionDef>(std::move(name), std::move(parameters), std::move(typ), std::move(body));
+				}
+				else
+				{
+					if(token().type == TokenType::Invalid)
+						throw Error::After(it - 1, "expected body after '", last_token().value, "'");
+					else
+						throw Error::At(it, "unexpected symbol '", token().value, "'");
+				}
+			}
+			else
+			{
+				if(token().type == TokenType::Invalid)
+					throw Error::After(it - 1, "expected '(' after '", last_token().value, "'");
+				else
+					throw Error::At(it, "unexpected symbol '", token().value, "'");
+			}
+		}
+		else
+		{
+			if(token().type == TokenType::Invalid)
+				throw Error::After(it - 1, "expected identifier after 'func'");
+			else
+				throw Error::At(it, "unexpected symbol '", token().value, "'");
+		}
+	}
+
 	return nullptr;
 }
 
@@ -256,7 +371,7 @@ std::unique_ptr<Expression> Parser::call_expr(const Token &tok, std::unique_ptr<
 			if(!arg)
 			{
 				if(token().type == TokenType::Invalid)
-					throw Error::After(it - 1, "expected expression after '", last_token().value, "'");
+					throw Error::After(it - 1, "expected expression or ')' after '", last_token().value, "'");
 				else
 					throw Error::At(it, "unexpected symbol '", token().value, "'");
 			}
@@ -268,9 +383,7 @@ std::unique_ptr<Expression> Parser::call_expr(const Token &tok, std::unique_ptr<
 			match(",");
 
 			if(token().value == ")")
-			{
 				throw Error::At(it, "unexpected symbol '", it->value, "'");
-			}
 		}
 	}
 
@@ -309,6 +422,91 @@ std::unique_ptr<Expression> Parser::literal(const Token &tok)
 }
 
 // general
+
+std::unique_ptr<Block> Parser::block()
+{
+	if(match("{"))
+	{
+		std::vector<std::unique_ptr<Statement>> statements;
+
+		std::unique_ptr<Statement> stmt;
+		while((stmt = statement()))
+		{
+			statements.push_back(std::move(stmt));
+		}
+
+		if(match("}"))
+		{
+			return std::make_unique<Block>(std::move(statements));
+		}
+		else throw Error::After(it - 1, "expected '}' after '", last_token().value, "'");
+	}
+
+	return nullptr;
+}
+
+std::unique_ptr<Parameter> Parser::parameter()
+{
+	if(match(TokenType::Identifier))
+	{
+		auto name = std::make_unique<Identifier>(last_token().value);
+
+		auto type = type_annotation();
+		if(type)
+		{
+			return std::make_unique<Parameter>(std::move(name), std::move(type));
+		}
+		else
+		{
+			if(token().type == TokenType::Invalid)
+				throw Error::After(it - 1, "expected type annotation after '", last_token().value, "'");
+			else
+				throw Error::At(it, "unexpected symbol '", token().value, "'");
+		}
+	}
+	return nullptr;
+}
+
+std::unique_ptr<Type> Parser::type_annotation()
+{
+	if(match(":"))
+	{
+		auto typ = type();
+		if(typ)
+		{
+			return typ;
+		}
+		else
+		{
+			if(token().type == TokenType::Invalid)
+				throw Error::After(it - 1, "expected type after '", last_token().value, "'");
+			else
+				throw Error::At(it, "unexpected symbol '", token().value, "'");
+		}
+	}
+
+	return nullptr;
+}
+
+std::unique_ptr<Type> Parser::type()
+{
+	// name
+	if(match(TokenType::Identifier))
+	{
+		return std::make_unique<Type>(last_token().value);
+	}
+	// unit
+	else if(match("("))
+	{
+		if(match(")"))
+		{
+			return std::make_unique<Type>("()");
+		}
+		else throw Error::At(it - 1, "unexpected symbol '", last_token().value, "'");
+	}
+
+	return nullptr;
+}
 
 // utility
 

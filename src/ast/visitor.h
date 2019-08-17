@@ -2,7 +2,10 @@
 
 #pragma once
 
-struct Invalid;
+struct Program;
+struct ExprStatement;
+struct VariableDef;
+struct FunctionDef;
 struct NumberLiteral;
 struct StringLiteral;
 struct BooleanLiteral;
@@ -11,15 +14,18 @@ struct FunctionCall;
 struct InfixOperator;
 struct PrefixOperator;
 struct PostfixOperator;
-struct ExprStatement;
+struct Invalid;
 struct Block;
-struct Program;
-struct VariableDef;
+struct Parameter;
+struct Type;
 
 class Visitor
 {
 public:
-	virtual void visit(Invalid &node) = 0;
+	virtual void visit(Program &node) = 0;
+	virtual void visit(ExprStatement &node) = 0;
+	virtual void visit(VariableDef &node) = 0;
+	virtual void visit(FunctionDef &node) = 0;
 	virtual void visit(NumberLiteral &node) = 0;
 	virtual void visit(StringLiteral &node) = 0;
 	virtual void visit(BooleanLiteral &node) = 0;
@@ -28,8 +34,8 @@ public:
 	virtual void visit(InfixOperator &node) = 0;
 	virtual void visit(PrefixOperator &node) = 0;
 	virtual void visit(PostfixOperator &node) = 0;
-	virtual void visit(ExprStatement &node) = 0;
+	virtual void visit(Invalid &node) = 0;
 	virtual void visit(Block &node) = 0;
-	virtual void visit(Program &node) = 0;
-	virtual void visit(VariableDef &node) = 0;
+	virtual void visit(Parameter &node) = 0;
+	virtual void visit(Type &node) = 0;
 };

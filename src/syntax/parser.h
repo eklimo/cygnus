@@ -31,6 +31,7 @@ private:
 
 	// statements
 	std::unique_ptr<VariableDef> variable_def();
+	std::unique_ptr<FunctionDef> function_def();
 
 	// expressions
 	std::unique_ptr<Expression> expression(int rbp = 0);
@@ -44,6 +45,12 @@ private:
 	std::unique_ptr<Expression> call_expr(const Token &token, std::unique_ptr<Expression> left);
 	std::unique_ptr<Expression> literal(const Token &token);
 
+	// general
+	std::unique_ptr<Block> block();
+	std::unique_ptr<Parameter> parameter();
+	std::unique_ptr<Type> type_annotation();
+	std::unique_ptr<Type> type();
+
 	// utility
 	const Token &token() const;
 	const Token &last_token() const;
@@ -52,6 +59,4 @@ private:
 	bool match(TokenType type);
 	bool match(std::string_view value);
 	bool match(TokenType type, std::string_view value);
-
-	// general
 };

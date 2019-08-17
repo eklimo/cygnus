@@ -13,9 +13,9 @@ expression-statement = expression
 
 
 # declaration statements
-variable-definition = "var" IDENTIFIER type-annotation|("=" expression)
+variable-definition = "var" IDENTIFIER (type-annotation ("=" expression)?)|("=" expression)
 
-function-definition = "func" IDENTIFIER "(" (parameter ("," parameter)*)? ")" ("->" type)? "{" statement* "}"
+function-definition = "func" IDENTIFIER "(" (parameter ("," parameter)*)? ")" ("->" type)? block
 
 
 # expressions
@@ -55,5 +55,5 @@ literal = NUMBER
 block = "{" statement* "}"
 parameter = IDENTIFIER type-annotation
 type-annotation = ":" type
-type = IDENTIFIER
+type = IDENTIFIER | "(" ")"
 ```

@@ -12,12 +12,40 @@ struct Node
 {
 	virtual void accept(Visitor &v) = 0;
 };
-struct Invalid : public Node
-{
-	void accept(Visitor &v) override;
-};
 struct Expression : public Node
 {
+};
+struct Statement : public Node
+{
+};
+struct Program : public Node
+{
+	std::vector<std::unique_ptr<Statement>> statements;
+	Program(std::vector<std::unique_ptr<Statement>> statements);
+	void accept(Visitor &v) override;
+};
+struct ExprStatement : public Statement
+{
+	std::unique_ptr<Expression> expr;
+	ExprStatement(std::unique_ptr<Expression> expr);
+	void accept(Visitor &v) override;
+};
+struct VariableDef : public Statement
+{
+	std::unique_ptr<Identifier> name;
+	std::unique_ptr<Type> type;
+	std::unique_ptr<Expression> value;
+	VariableDef(std::unique_ptr<Identifier> name, std::unique_ptr<Type> type, std::unique_ptr<Expression> value);
+	void accept(Visitor &v) override;
+};
+struct FunctionDef : public Statement
+{
+	std::unique_ptr<Identifier> name;
+	std::vector<std::unique_ptr<Parameter>> parameters;
+	std::unique_ptr<Type> return_type;
+	std::unique_ptr<Block> body;
+	FunctionDef(std::unique_ptr<Identifier> name, std::vector<std::unique_ptr<Parameter>> parameters, std::unique_ptr<Type> return_type, std::unique_ptr<Block> body);
+	void accept(Visitor &v) override;
 };
 struct Value : public Expression
 {
@@ -79,13 +107,8 @@ struct PostfixOperator : public Operator
 	PostfixOperator(std::string_view symbol, std::unique_ptr<Expression> operand);
 	void accept(Visitor &v) override;
 };
-struct Statement : public Node
+struct Invalid : public Node
 {
-};
-struct ExprStatement : public Statement
-{
-	std::unique_ptr<Expression> expr;
-	ExprStatement(std::unique_ptr<Expression> expr);
 	void accept(Visitor &v) override;
 };
 struct Block : public Statement
@@ -94,15 +117,16 @@ struct Block : public Statement
 	Block(std::vector<std::unique_ptr<Statement>> statements);
 	void accept(Visitor &v) override;
 };
-struct Program : public Block
-{
-	using Block::Block;
-	void accept(Visitor &v) override;
-};
-struct VariableDef : public Statement
+struct Parameter : public Node
 {
 	std::unique_ptr<Identifier> name;
-	std::unique_ptr<Expression> value;
-	VariableDef(std::unique_ptr<Identifier> name, std::unique_ptr<Expression> value);
+	std::unique_ptr<Type> type;
+	Parameter(std::unique_ptr<Identifier> name, std::unique_ptr<Type> type);
+	void accept(Visitor &v) override;
+};
+struct Type : public Node
+{
+	std::string_view value;
+	Type(std::string_view value);
 	void accept(Visitor &v) override;
 };

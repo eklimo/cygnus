@@ -1,7 +1,31 @@
 abstract Node;
-Invalid : Node;
 
 abstract Expression : Node;
+abstract Statement : Node;
+
+Program : Node
+{
+	std::vector<std::unique_ptr<Statement>> statements
+};
+
+ExprStatement : Statement
+{
+	std::unique_ptr<Expression> expr
+};
+VariableDef : Statement
+{
+	std::unique_ptr<Identifier> name
+	std::unique_ptr<Type> type
+	std::unique_ptr<Expression> value
+};
+FunctionDef : Statement
+{
+	std::unique_ptr<Identifier> name
+	std::vector<std::unique_ptr<Parameter>> parameters
+	std::unique_ptr<Type> return_type
+	std::unique_ptr<Block> body
+};
+
 abstract Value : Expression
 {
 	std::string_view value
@@ -34,18 +58,17 @@ PostfixOperator : Operator
 	std::unique_ptr<Expression> operand
 };
 
-abstract Statement : Node;
-ExprStatement : Statement
-{
-	std::unique_ptr<Expression> expr
-};
+Invalid : Node;
 Block : Statement
 {
 	std::vector<std::unique_ptr<Statement>> statements
 };
-Program : Block;
-VariableDef : Statement
+Parameter : Node
 {
 	std::unique_ptr<Identifier> name
-	std::unique_ptr<Expression> value
+	std::unique_ptr<Type> type
+};
+Type : Node
+{
+	std::string_view value
 };

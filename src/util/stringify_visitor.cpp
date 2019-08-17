@@ -32,6 +32,10 @@ namespace Util
 	{
 		value << "Variable definition";
 	}
+	void StringifyVisitor::visit(FunctionDef &node)
+	{
+		value << "Function definition";
+	}
 
 	// expressions
 
@@ -77,5 +81,13 @@ namespace Util
 	void StringifyVisitor::visit(Block &node)
 	{
 		value << "Block";
+	}
+	void StringifyVisitor::visit(Parameter &node)
+	{
+		value << "Parameter";
+	}
+	void StringifyVisitor::visit(Type &node)
+	{
+		value << "Type '" << node.value << "'";
 	}
 }

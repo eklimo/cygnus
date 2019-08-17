@@ -18,6 +18,7 @@ namespace Util
 		// statements
 		void visit(ExprStatement &node);
 		void visit(VariableDef &node);
+		void visit(FunctionDef &node);
 
 		// expressions
 		void visit(NumberLiteral &node);
@@ -32,6 +33,8 @@ namespace Util
 		// general
 		void visit(Invalid &node);
 		void visit(Block &node);
+		void visit(Parameter &node);
+		void visit(Type &node);
 
 		std::string stringify(Node &node);
 	private:
