@@ -83,39 +83,19 @@ std::unique_ptr<VariableDef> Parser::variable_def()
 			if(match("="))
 			{
 				auto value = expression();
-				if(value)
-				{
-					return std::make_unique<VariableDef>(std::move(name), typ ? std::move(typ) : nullptr, std::move(value));
-				}
-				else
-				{
-					if(token().type == TokenType::Invalid)
-						throw Error::After(it - 1, "expected expression after '", last_token().value, "'");
-					else
-						throw Error::At(it, "unexpected symbol '", token().value, "'");
-				}
+				if(!value)
+					expect("expression");
+
+				return std::make_unique<VariableDef>(std::move(name), typ ? std::move(typ) : nullptr, std::move(value));
 			}
 			// type annotation only
 			else if(typ)
 			{
 				return std::make_unique<VariableDef>(std::move(name), std::move(typ), nullptr);
 			}
-			else
-			{
-				if(token().type == TokenType::Invalid)
-					throw Error::After(it - 1, "expected '=' after '", last_token().value, "'");
-				else
-					throw Error::At(it, "unexpected symbol '", token().value, "'");
-			}
-
+			else expect("'=' or type annotation");
 		}
-		else
-		{
-			if(token().type == TokenType::Invalid)
-				throw Error::After(it - 1, "expected identifier after 'var'");
-			else
-				throw Error::At(it, "unexpected symbol '", token().value, "'");
-		}
+		else expect("name");
 	}
 	return nullptr;
 }
@@ -131,84 +111,46 @@ std::unique_ptr<FunctionDef> Parser::function_def()
 			{
 				std::vector<std::unique_ptr<Parameter>> parameters;
 
-				if(token().value != ")")
+				while(true)
 				{
-					while(true)
-					{
-						auto param = parameter();
-						if(!param)
-						{
-							if(token().type == TokenType::Invalid)
-								throw Error::After(it - 1, "expected parameter or ')' after '", last_token().value, "'");
-							else
-								throw Error::At(it, "unexpected symbol '", token().value, "'");
-						}
-						parameters.push_back(std::move(param));
+					if(token().value == ")" && last_token().value != ",") break;
 
-						if(token().value != ",")
-							break;
+					auto param = parameter();
+					if(!param)
+						expect(last_token().value == "," ? "parameter" : "parameter or ')'");
+					parameters.push_back(std::move(param));
 
-						match(",");
+					if(token().value != ")" && token().value != ",")
+						expect("')' or ','");
 
-						if(token().value == ")")
-							throw Error::At(it, "unexpected symbol '", it->value, "'");
-					}
+					match(",");
 				}
 
 				if(!match(")"))
-				{
-					if(token().type == TokenType::Invalid)
-						throw Error::After(it - 1, "expected ')' after '", last_token().value, "'");
-					else
-						throw Error::At(it, "unexpected symbol '", token().value, "'");
-				}
+					expect("')'");
 
 				std::unique_ptr<Type> typ = nullptr;
 				if(match("->"))
 				{
 					typ = type();
 					if(!typ)
-					{
-						if(token().type == TokenType::Invalid)
-							throw Error::After(it - 1, "expected type after '", last_token().value, "'");
-						else
-							throw Error::At(it, "unexpected symbol '", token().value, "'");
-					}
+						expect("type");
 				}
 				else
 				{
-					// infer no return
+					// infer no return type
 					typ = std::make_unique<Type>("()");
 				}
 
 				auto body = block();
-				if(body)
-				{
-					return std::make_unique<FunctionDef>(std::move(name), std::move(parameters), std::move(typ), std::move(body));
-				}
-				else
-				{
-					if(token().type == TokenType::Invalid)
-						throw Error::After(it - 1, "expected body after '", last_token().value, "'");
-					else
-						throw Error::At(it, "unexpected symbol '", token().value, "'");
-				}
+				if(!body)
+					expect("'{'");
+
+				return std::make_unique<FunctionDef>(std::move(name), std::move(parameters), std::move(typ), std::move(body));
 			}
-			else
-			{
-				if(token().type == TokenType::Invalid)
-					throw Error::After(it - 1, "expected '(' after '", last_token().value, "'");
-				else
-					throw Error::At(it, "unexpected symbol '", token().value, "'");
-			}
+			else expect("'('");
 		}
-		else
-		{
-			if(token().type == TokenType::Invalid)
-				throw Error::After(it - 1, "expected identifier after 'func'");
-			else
-				throw Error::At(it, "unexpected symbol '", token().value, "'");
-		}
+		else expect("name");
 	}
 
 	return nullptr;
@@ -293,14 +235,7 @@ std::unique_ptr<Expression> Parser::prefix_operator_expr(const Token &tok)
 
 	auto operand = expression(prec);
 	if(!operand)
-	{
-		if((Lang::null_precedence(tok) != -1 && Lang::left_precedence(tok) != -1) && token().type != TokenType::Invalid)
-			throw Error::At(it, "unexpected symbol '", token().value, "'");
-		else if(token().type == TokenType::Invalid)
-			throw Error::After(it - 1, "expected operand after '", last_token().value, "'");
-		else
-			throw Error::At(it, "unexpected symbol '", token().value, "'");
-	}
+		expect("expression");
 
 	return std::make_unique<PrefixOperator>(tok.value, std::move(operand));
 }
@@ -311,12 +246,7 @@ std::unique_ptr<Expression> Parser::infix_operator_expr(const Token &tok, std::u
 
 	auto right = expression(Lang::is_right_associative(tok) ? prec - 1 : prec);
 	if(!right)
-	{
-		if(token().type == TokenType::Invalid)
-			throw Error::After(it - 1, "expected operand after '", last_token().value, "'");
-		else
-			throw Error::At(it, "unexpected symbol '", token().value, "'");
-	}
+		expect("expression");
 
 	return std::make_unique<InfixOperator>(tok.value, std::move(left), std::move(right));
 }
@@ -332,20 +262,10 @@ std::unique_ptr<Expression> Parser::group_expr(const Token &tok)
 
 	auto expr = expression(prec);
 	if(!expr)
-	{
-		if(token().type == TokenType::Invalid || token().value == ")")
-			throw Error::After(it - 1, "expected expression after '", last_token().value, "'");
-		else
-			throw Error::At(it, "unexpected symbol '", token().value, "'");
-	}
+		expect("expression");
 
 	if(!match(")"))
-	{
-		if(token().type == TokenType::Invalid)
-			throw Error::After(it - 1, "expected ')' after '", last_token().value, "'");
-		else
-			throw Error::At(it, "unexpected symbol '", token().value, "'");
-	}
+		expect("')'");
 
 	return expr;
 }
@@ -363,37 +283,23 @@ std::unique_ptr<Expression> Parser::call_expr(const Token &tok, std::unique_ptr<
 
 	std::vector<std::unique_ptr<Expression>> arguments;
 
-	if(token().value != ")")
+	while(true)
 	{
-		while(true)
-		{
-			auto arg = expression(0);
-			if(!arg)
-			{
-				if(token().type == TokenType::Invalid)
-					throw Error::After(it - 1, "expected expression or ')' after '", last_token().value, "'");
-				else
-					throw Error::At(it, "unexpected symbol '", token().value, "'");
-			}
-			arguments.push_back(std::move(arg));
+		if(token().value == ")" && last_token().value != ",") break;
 
-			if(token().value != ",")
-				break;
+		auto arg = expression(0);
+		if(!arg)
+			expect(last_token().value == "," ? "expression" : "expression or ')'");
+		arguments.push_back(std::move(arg));
 
-			match(",");
+		if(token().value != ")" && token().value != ",")
+			expect("')' or ','");
 
-			if(token().value == ")")
-				throw Error::At(it, "unexpected symbol '", it->value, "'");
-		}
+		match(",");
 	}
 
 	if(!match(")"))
-	{
-		if(token().type == TokenType::Invalid)
-			throw Error::After(it - 1, "expected ')' after '", last_token().value, "'");
-		else
-			throw Error::At(it, "unexpected symbol '", token().value, "'");
-	}
+		expect("')'");
 
 	return std::make_unique<FunctionCall>(cast<Expression, Identifier>(std::move(left)), std::move(arguments));
 }
@@ -413,7 +319,7 @@ std::unique_ptr<Expression> Parser::literal(const Token &tok)
 			if(Lang::is_boolean(tok.value))
 				return std::make_unique<BooleanLiteral>(tok.value);
 			else
-				throw Error::At(it - 1, "unexpected symbol '", last_token().value, "'");
+				return nullptr;
 		}
 
 		default:
@@ -435,11 +341,10 @@ std::unique_ptr<Block> Parser::block()
 			statements.push_back(std::move(stmt));
 		}
 
-		if(match("}"))
-		{
-			return std::make_unique<Block>(std::move(statements));
-		}
-		else throw Error::After(it - 1, "expected '}' after '", last_token().value, "'");
+		if(!match("}"))
+			expect("'}'");
+
+		return std::make_unique<Block>(std::move(statements));
 	}
 
 	return nullptr;
@@ -452,17 +357,10 @@ std::unique_ptr<Parameter> Parser::parameter()
 		auto name = std::make_unique<Identifier>(last_token().value);
 
 		auto type = type_annotation();
-		if(type)
-		{
-			return std::make_unique<Parameter>(std::move(name), std::move(type));
-		}
-		else
-		{
-			if(token().type == TokenType::Invalid)
-				throw Error::After(it - 1, "expected type annotation after '", last_token().value, "'");
-			else
-				throw Error::At(it, "unexpected symbol '", token().value, "'");
-		}
+		if(!type)
+			expect("type annotation");
+
+		return std::make_unique<Parameter>(std::move(name), std::move(type));
 	}
 	return nullptr;
 }
@@ -472,17 +370,10 @@ std::unique_ptr<Type> Parser::type_annotation()
 	if(match(":"))
 	{
 		auto typ = type();
-		if(typ)
-		{
-			return typ;
-		}
-		else
-		{
-			if(token().type == TokenType::Invalid)
-				throw Error::After(it - 1, "expected type after '", last_token().value, "'");
-			else
-				throw Error::At(it, "unexpected symbol '", token().value, "'");
-		}
+		if(!typ)
+			expect("type");
+
+		return typ;
 	}
 
 	return nullptr;
@@ -498,11 +389,10 @@ std::unique_ptr<Type> Parser::type()
 	// unit
 	else if(match("("))
 	{
-		if(match(")"))
-		{
-			return std::make_unique<Type>("()");
-		}
-		else throw Error::At(it - 1, "unexpected symbol '", last_token().value, "'");
+		if(!match(")"))
+			throw Error::At(it - 1, "unexpected symbol '", last_token().value, "'");
+
+		return std::make_unique<Type>("()");
 	}
 
 	return nullptr;
@@ -564,4 +454,21 @@ bool Parser::match(std::string_view value)
 bool Parser::match(TokenType type, std::string_view value)
 {
 	return it->value == value && match(type);
+}
+
+void Parser::expect(std::string_view expect) const
+{
+	std::string value = "'" + std::string(it->value) + "'";
+	switch(it->type)
+	{
+		case TokenType::Keyword:
+			value = "keyword " + value;
+		default:
+			break;
+	}
+
+	if(it->type != TokenType::Invalid)
+		throw Error::At(it, "expected ", expect, ", found ", value);
+	else
+		throw Error::After(it - 1, "expected ", expect);
 }

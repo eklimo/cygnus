@@ -59,4 +59,5 @@ private:
 	bool match(TokenType type);
 	bool match(std::string_view value);
 	bool match(TokenType type, std::string_view value);
+	void expect(std::string_view expect) const;
 };

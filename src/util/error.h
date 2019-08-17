@@ -15,10 +15,12 @@ namespace Util
 	class Error : public std::runtime_error
 	{
 	public:
-
 		template<typename... Args>
 		static Error At(const std::vector<Lexer::Token>::const_iterator it, Args &&... args)
 		{
+			if(it->type == Lexer::TokenType::Invalid)
+				return After(it - 1, std::forward<Args>(args)...);
+
 			auto begin = it->location;
 
 			FileLocation end
@@ -50,7 +52,7 @@ namespace Util
 			FileLocation loc
 			(
 			    it->location.line,
-				column
+			    column
 			);
 
 			return Error(loc, std::forward<Args>(args)...);
