@@ -107,6 +107,12 @@ struct PostfixOperator : public Operator
 	PostfixOperator(std::string_view symbol, std::unique_ptr<Expression> operand);
 	void accept(Visitor &v) override;
 };
+struct ReturnExpr : public Expression
+{
+	std::unique_ptr<Expression> value;
+	ReturnExpr(std::unique_ptr<Expression> value);
+	void accept(Visitor &v) override;
+};
 struct Invalid : public Node
 {
 	void accept(Visitor &v) override;

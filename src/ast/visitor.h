@@ -14,6 +14,7 @@ struct FunctionCall;
 struct InfixOperator;
 struct PrefixOperator;
 struct PostfixOperator;
+struct ReturnExpr;
 struct Invalid;
 struct Block;
 struct Parameter;
@@ -34,6 +35,7 @@ public:
 	virtual void visit(InfixOperator &node) = 0;
 	virtual void visit(PrefixOperator &node) = 0;
 	virtual void visit(PostfixOperator &node) = 0;
+	virtual void visit(ReturnExpr &node) = 0;
 	virtual void visit(Invalid &node) = 0;
 	virtual void visit(Block &node) = 0;
 	virtual void visit(Parameter &node) = 0;

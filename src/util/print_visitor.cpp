@@ -107,6 +107,13 @@ namespace Util
 		node.operand->accept(*this);
 		tab_level--;
 	}
+	void PrintVisitor::visit(ReturnExpr &node)
+	{
+		print(str.stringify(node));
+		tab_level++;
+		node.value->accept(*this);
+		tab_level--;
+	}
 
 	// general
 

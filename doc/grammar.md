@@ -48,7 +48,8 @@ while-expression = "while" expression block
 
 literal = NUMBER
         | STRING
-        | BOOLEAN
+        | boolean-literal
+boolean-literal = "true" | "false"
 
 
 # general

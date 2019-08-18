@@ -29,6 +29,7 @@ namespace Util
 		void visit(InfixOperator &node);
 		void visit(PrefixOperator &node);
 		void visit(PostfixOperator &node);
+		void visit(ReturnExpr &node);
 
 		// general
 		void visit(Invalid &node);

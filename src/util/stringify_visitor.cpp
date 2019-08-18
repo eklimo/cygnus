@@ -71,6 +71,10 @@ namespace Util
 	{
 		value << "Postfix operator '" << node.symbol << "'";
 	}
+	void StringifyVisitor::visit(ReturnExpr &node)
+	{
+		value << "Return expression";
+	}
 
 	// general
 

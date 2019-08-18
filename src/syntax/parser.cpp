@@ -181,8 +181,16 @@ std::unique_ptr<Expression> Parser::null_denotation(const Token &tok)
 	{
 		case TokenType::Number:
 		case TokenType::String:
-		case TokenType::Keyword:
 			return literal(tok);
+		case TokenType::Keyword:
+		{
+			if(Lang::is_boolean(tok.value))
+				return literal(tok);
+			else if(tok.value == "return")
+				return return_expr(tok);
+
+			return nullptr;
+		}
 
 		case TokenType::Identifier:
 			return std::make_unique<Identifier>(tok.value);
@@ -302,6 +310,13 @@ std::unique_ptr<Expression> Parser::call_expr(const Token &tok, std::unique_ptr<
 		expect("')'");
 
 	return std::make_unique<FunctionCall>(cast<Expression, Identifier>(std::move(left)), std::move(arguments));
+}
+
+std::unique_ptr<Expression> Parser::return_expr(const Token &token)
+{
+	auto value = expression();
+
+	return std::make_unique<ReturnExpr>(std::move(value));
 }
 
 std::unique_ptr<Expression> Parser::literal(const Token &tok)

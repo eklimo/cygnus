@@ -43,6 +43,7 @@ private:
 	std::unique_ptr<Expression> postfix_operator_expr(const Token &token, std::unique_ptr<Expression> left);
 	std::unique_ptr<Expression> group_expr(const Token &token);
 	std::unique_ptr<Expression> call_expr(const Token &token, std::unique_ptr<Expression> left);
+	std::unique_ptr<Expression> return_expr(const Token &token);
 	std::unique_ptr<Expression> literal(const Token &token);
 
 	// general

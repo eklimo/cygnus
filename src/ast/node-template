@@ -57,6 +57,10 @@ PostfixOperator : Operator
 {
 	std::unique_ptr<Expression> operand
 };
+ReturnExpr : Expression
+{
+	std::unique_ptr<Expression> value
+};
 
 Invalid : Node;
 Block : Statement

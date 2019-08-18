@@ -85,6 +85,12 @@ namespace Lang
 			case TokenType::String:
 			case TokenType::Identifier:
 				return 0;
+			case TokenType::Keyword:
+			{
+				if(is_boolean(sym) || sym == "return")
+					return 0;
+				break;
+			}
 			default:
 				return -1;
 		}
