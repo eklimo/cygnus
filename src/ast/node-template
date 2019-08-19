@@ -68,6 +68,11 @@ IfExpr : Expression
 	std::unique_ptr<Block> if_branch
 	std::unique_ptr<Block> else_branch
 };
+WhileExpr : Expression
+{
+	std::unique_ptr<Expression> condition
+	std::unique_ptr<Block> body
+};
 
 Invalid : Node;
 Block : Statement

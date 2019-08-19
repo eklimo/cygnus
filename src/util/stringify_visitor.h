@@ -32,6 +32,7 @@ namespace Util
 		void visit(PostfixOperator &node);
 		void visit(ReturnExpr &node);
 		void visit(IfExpr &node);
+		void visit(WhileExpr &node);
 
 		// general
 		void visit(Invalid &node);

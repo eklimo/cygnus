@@ -17,6 +17,7 @@ struct PrefixOperator;
 struct PostfixOperator;
 struct ReturnExpr;
 struct IfExpr;
+struct WhileExpr;
 struct Invalid;
 struct Block;
 struct Parameter;
@@ -40,6 +41,7 @@ public:
 	virtual void visit(PostfixOperator &node) = 0;
 	virtual void visit(ReturnExpr &node) = 0;
 	virtual void visit(IfExpr &node) = 0;
+	virtual void visit(WhileExpr &node) = 0;
 	virtual void visit(Invalid &node) = 0;
 	virtual void visit(Block &node) = 0;
 	virtual void visit(Parameter &node) = 0;

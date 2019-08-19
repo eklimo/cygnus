@@ -110,6 +110,14 @@ void IfExpr::accept(Visitor &v)
 {
 	v.visit(*this);
 }
+WhileExpr::WhileExpr(std::unique_ptr<Expression> _condition, std::unique_ptr<Block> _body)
+	: condition(std::move(_condition)), body(std::move(_body))
+{
+}
+void WhileExpr::accept(Visitor &v)
+{
+	v.visit(*this);
+}
 void Invalid::accept(Visitor &v)
 {
 	v.visit(*this);

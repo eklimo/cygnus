@@ -127,6 +127,14 @@ namespace Util
 		if(node.else_branch) node.else_branch->accept(*this);
 		tab_level--;
 	}
+	void PrintVisitor::visit(WhileExpr &node)
+	{
+		print(str.stringify(node));
+		tab_level++;
+		node.condition->accept(*this);
+		node.body->accept(*this);
+		tab_level--;
+	}
 
 	// general
 

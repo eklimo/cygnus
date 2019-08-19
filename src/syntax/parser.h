@@ -45,6 +45,7 @@ private:
 	std::unique_ptr<Expression> call_expr(const Token &token, std::unique_ptr<Expression> left);
 	std::unique_ptr<Expression> return_expr(const Token &token);
 	std::unique_ptr<Expression> if_expr(const Token &token);
+	std::unique_ptr<Expression> while_expr(const Token &token);
 	std::unique_ptr<Expression> literal(const Token &token);
 
 	// general

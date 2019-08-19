@@ -9,7 +9,7 @@ using Lexer::TokenType;
 
 namespace Lang
 {
-	constexpr std::string_view keywords[] = {"true", "false", "var", "func", "return", "if", "else"};
+	constexpr std::string_view keywords[] = {"true", "false", "var", "func", "return", "if", "else", "while"};
 	// descending length
 	constexpr std::string_view operators[] = {"++", "--", ">=", "<=", "==", "!=", "+", "-", "*", "/", "=", ">", "<"};
 	constexpr std::string_view word_operators[] = {};
@@ -87,7 +87,7 @@ namespace Lang
 				return 0;
 			case TokenType::Keyword:
 			{
-				if(is_boolean(sym) || sym == "return" || sym == "if")
+				if(is_boolean(sym) || sym == "return" || sym == "if" || sym == "while")
 					return 0;
 				break;
 			}

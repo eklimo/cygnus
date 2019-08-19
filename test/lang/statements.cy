@@ -15,3 +15,13 @@ func max(a: Int, b: Int) -> Int
 {
 	return if a > b { a } else { b }
 }
+
+func count(n: Int)
+{
+	var x = 0
+	while x < n
+	{
+		print(x)
+		x++
+	}
+}

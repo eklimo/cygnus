@@ -126,6 +126,13 @@ struct IfExpr : public Expression
 	IfExpr(std::unique_ptr<Expression> condition, std::unique_ptr<Block> if_branch, std::unique_ptr<Block> else_branch);
 	void accept(Visitor &v) override;
 };
+struct WhileExpr : public Expression
+{
+	std::unique_ptr<Expression> condition;
+	std::unique_ptr<Block> body;
+	WhileExpr(std::unique_ptr<Expression> condition, std::unique_ptr<Block> body);
+	void accept(Visitor &v) override;
+};
 struct Invalid : public Node
 {
 	void accept(Visitor &v) override;

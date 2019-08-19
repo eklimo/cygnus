@@ -181,6 +181,8 @@ std::unique_ptr<Expression> Parser::null_denotation(const Token &tok)
 				return return_expr(tok);
 			else if(tok.value == "if")
 				return if_expr(tok);
+			else if(tok.value == "while")
+				return while_expr(tok);
 
 			return nullptr;
 		}
@@ -344,6 +346,19 @@ std::unique_ptr<Expression> Parser::if_expr(const Token &tok)
 	}
 
 	return std::make_unique<IfExpr>(std::move(condition), std::move(if_branch), std::move(else_branch));
+}
+
+std::unique_ptr<Expression> Parser::while_expr(const Token &tok)
+{
+	auto condition = expression();
+	if(!condition)
+		expect("expression");
+
+	auto body = block();
+	if(!body)
+		expect("'{'");
+
+	return std::make_unique<WhileExpr>(std::move(condition), std::move(body));
 }
 
 std::unique_ptr<Expression> Parser::literal(const Token &tok)

@@ -83,6 +83,10 @@ namespace Util
 	{
 		value << "If expression";
 	}
+	void StringifyVisitor::visit(WhileExpr &node)
+	{
+		value << "While expression";
+	}
 
 	// general
 
