@@ -54,8 +54,7 @@ std::unique_ptr<Statement> Parser::statement()
 	    (stmt = function_def()) ||
 	    (stmt = expr_statement()) ||
 	    (stmt = block())
-	)
-		return stmt;
+	) return stmt;
 
 	return nullptr;
 }
@@ -75,29 +74,26 @@ std::unique_ptr<VariableDef> Parser::variable_def()
 {
 	if(match("var"))
 	{
-		if(match(TokenType::Identifier))
+		if(!match(TokenType::Identifier))
+			expect("name");
+		auto name = std::make_unique<Identifier>(last_token().value);
+
+		auto typ = type_annotation();
+
+		std::unique_ptr<Expression> value;
+		if(match("="))
 		{
-			auto name = std::make_unique<Identifier>(last_token().value);
-			auto typ = type_annotation();
-
-			// value
-			if(match("="))
-			{
-				auto value = expression();
-				if(!value)
-					expect("expression");
-
-				return std::make_unique<VariableDef>(std::move(name), typ ? std::move(typ) : nullptr, std::move(value));
-			}
-			// type annotation only
-			else if(typ)
-			{
-				return std::make_unique<VariableDef>(std::move(name), std::move(typ), nullptr);
-			}
-			else expect("'=' or type annotation");
+			value = expression();
+			if(!value)
+				expect("expression");
 		}
-		else expect("name");
+
+		if(!value && !typ)
+			expect("'=' or type annotation");
+
+		return std::make_unique<VariableDef>(std::move(name), std::move(typ), std::move(value));
 	}
+
 	return nullptr;
 }
 
@@ -105,48 +101,46 @@ std::unique_ptr<FunctionDef> Parser::function_def()
 {
 	if(match("func"))
 	{
-		if(match(TokenType::Identifier))
+		if(!match(TokenType::Identifier))
+			expect("name");
+		auto name = std::make_unique<Identifier>(last_token().value);
+
+		if(!match("("))
+			expect("'('");
+
+		std::vector<std::unique_ptr<Parameter>> parameters;
+
+		while(true)
 		{
-			auto name = std::make_unique<Identifier>(last_token().value);
-			if(match("("))
-			{
-				std::vector<std::unique_ptr<Parameter>> parameters;
+			if(token().value == ")" && last_token().value != ",") break;
 
-				while(true)
-				{
-					if(token().value == ")" && last_token().value != ",") break;
+			auto param = parameter();
+			if(!param)
+				expect(last_token().value == "," ? "parameter" : "parameter or ')'");
+			parameters.push_back(std::move(param));
 
-					auto param = parameter();
-					if(!param)
-						expect(last_token().value == "," ? "parameter" : "parameter or ')'");
-					parameters.push_back(std::move(param));
+			if(token().value != ")" && token().value != ",")
+				expect("')' or ','");
 
-					if(token().value != ")" && token().value != ",")
-						expect("')' or ','");
-
-					match(",");
-				}
-
-				if(!match(")"))
-					expect("')'");
-
-				std::unique_ptr<Type> typ = nullptr;
-				if(match("->"))
-				{
-					typ = type();
-					if(!typ)
-						expect("type");
-				}
-
-				auto body = block();
-				if(!body)
-					expect("'{'");
-
-				return std::make_unique<FunctionDef>(std::move(name), std::move(parameters), std::move(typ), std::move(body));
-			}
-			else expect("'('");
+			match(",");
 		}
-		else expect("name");
+
+		if(!match(")"))
+			expect("')'");
+
+		std::unique_ptr<Type> typ;
+		if(match("->"))
+		{
+			typ = type();
+			if(!typ)
+				expect("type");
+		}
+
+		auto body = block();
+		if(!body)
+			expect("'{'");
+
+		return std::make_unique<FunctionDef>(std::move(name), std::move(parameters), std::move(typ), std::move(body));
 	}
 
 	return nullptr;
@@ -178,6 +172,7 @@ std::unique_ptr<Expression> Parser::null_denotation(const Token &tok)
 		case TokenType::Number:
 		case TokenType::String:
 			return literal(tok);
+
 		case TokenType::Keyword:
 		{
 			if(Lang::is_boolean(tok.value))
@@ -333,27 +328,22 @@ std::unique_ptr<Expression> Parser::return_expr(const Token &tok)
 std::unique_ptr<Expression> Parser::if_expr(const Token &tok)
 {
 	auto condition = expression();
+	if(!condition)
+		expect("expression");
 
-	if(condition)
+	auto if_branch = block();
+	if(!if_branch)
+		expect("'{'");
+
+	std::unique_ptr<Block> else_branch;
+	if(match("else"))
 	{
-		auto if_branch = block();
-		if(if_branch)
-		{
-			std::unique_ptr<Block> else_branch;
-			if(match("else"))
-			{
-				else_branch = block();
-				if(!else_branch)
-					expect("'{'");
-			}
-
-			return std::make_unique<IfExpr>(std::move(condition), std::move(if_branch), std::move(else_branch));
-		}
-		else expect("'{'");
+		else_branch = block();
+		if(!else_branch)
+			expect("'{'");
 	}
-	else expect("expression");
 
-	return nullptr;
+	return std::make_unique<IfExpr>(std::move(condition), std::move(if_branch), std::move(else_branch));
 }
 
 std::unique_ptr<Expression> Parser::literal(const Token &tok)
@@ -376,12 +366,14 @@ std::unique_ptr<Expression> Parser::literal(const Token &tok)
 
 		case TokenType::Separator:
 		{
+			// unit
 			if(tok.value == "(")
 			{
 				if(match(")"))
 				{
 					return std::make_unique<UnitLiteral>("()");
 				}
+
 				return nullptr;
 			}
 			else
@@ -428,6 +420,7 @@ std::unique_ptr<Parameter> Parser::parameter()
 
 		return std::make_unique<Parameter>(std::move(name), std::move(type));
 	}
+
 	return nullptr;
 }
 
