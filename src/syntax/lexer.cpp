@@ -116,11 +116,7 @@ namespace Lexer
 		{
 			.type = TokenType::Number,
 			.value = std::string_view(begin, length),
-			.location =
-			{
-				.line = line,
-				.column = column - length + 1
-			}
+			.location = { line, column - length + 1 }
 		};
 	}
 
@@ -141,7 +137,6 @@ namespace Lexer
 		auto type = TokenType::Identifier;
 		auto value = std::string_view(begin, length);
 
-
 		if(Lang::is_keyword(value))
 		{
 			type = TokenType::Keyword;
@@ -155,11 +150,7 @@ namespace Lexer
 		{
 			.type = type,
 			.value = value,
-			.location =
-			{
-				.line = line,
-				.column = column - length + 1
-			}
+			.location = { line, column - length + 1 }
 		};
 	}
 
@@ -180,6 +171,12 @@ namespace Lexer
 			{
 				if(*it == '\n')
 				{
+					tokens.push_back(
+					{
+						.type = TokenType::Separator,
+						.value = "\n",
+						.location = { line, column }
+					});
 					line++;
 					column = 0;
 				}

@@ -6,8 +6,7 @@ var unit: () = ()
 
 func add(a: Int, b: Int) -> Int
 {
-	var sum = a + b
-	print(sum)
+	var sum = a + b; print(sum)
 	return sum
 }
 

@@ -2,7 +2,7 @@
 
 ```
 # main
-program = statement*
+program = statement-list
 statement = declaration-statement
           | expression-statement
           | block
@@ -56,7 +56,8 @@ unit-literal = "(" ")"
 
 
 # general
-block = "{" statement* "}"
+statement-list = (statement ("\n"|";" statement)*)?
+block = "{" statement-list "}"
 parameter = IDENTIFIER type-annotation
 type-annotation = ":" type
 type = IDENTIFIER | "(" ")"

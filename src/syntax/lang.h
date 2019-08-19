@@ -14,7 +14,7 @@ namespace Lang
 	constexpr std::string_view operators[] = {"++", "--", ">=", "<=", "==", "!=", "+", "-", "*", "/", "=", ">", "<"};
 	constexpr std::string_view word_operators[] = {};
 	// descending length
-	constexpr std::string_view separators[] = {"->", "(", ")", ",", "{", "}", ":"};
+	constexpr std::string_view separators[] = {"->", "(", ")", ",", "{", "}", ":", ";"};
 
 	// utility
 

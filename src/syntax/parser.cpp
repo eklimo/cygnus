@@ -32,13 +32,7 @@ std::unique_ptr<Program> Parser::parse()
 
 std::unique_ptr<Program> Parser::program()
 {
-	std::vector<std::unique_ptr<Statement>> statements;
-
-	std::unique_ptr<Statement> stmt;
-	while((stmt = statement()))
-	{
-		statements.push_back(std::move(stmt));
-	}
+	auto statements = statement_list();
 
 	return std::make_unique<Program>(std::move(statements));
 }
@@ -155,7 +149,10 @@ std::unique_ptr<Expression> Parser::expression(int rbp)
 
 	auto const &first = token();
 	advance();
+	trim();
+
 	auto tree = null_denotation(first);
+
 	while(it < end && rbp < Lang::left_precedence(token()))
 	{
 		auto const &next = token();
@@ -402,17 +399,47 @@ std::unique_ptr<Expression> Parser::literal(const Token &tok)
 
 // general
 
+std::vector<std::unique_ptr<Statement>> Parser::statement_list()
+{
+	std::vector<std::unique_ptr<Statement>> statements;
+
+	std::unique_ptr<Statement> stmt = statement();
+	while(stmt)
+	{
+		statements.push_back(std::move(stmt));
+
+		// semicolon separation
+		if(it->value == ";")
+		{
+			// reject semicolon at beginning and end of line
+			if((it - 1)->value != "\n" && (it + 1)->value != "\n")
+				match(";");
+			else
+				break;
+
+			stmt = statement();
+		}
+		// newline separation
+		else
+		{
+			auto sep = (it - 1);
+			stmt = statement();
+			if(stmt && sep->value != "\n")
+			{
+				it = sep + 1;
+				expect("newline or ';'");
+			}
+		}
+	}
+
+	return std::move(statements);
+}
+
 std::unique_ptr<Block> Parser::block()
 {
 	if(match("{"))
 	{
-		std::vector<std::unique_ptr<Statement>> statements;
-
-		std::unique_ptr<Statement> stmt;
-		while((stmt = statement()))
-		{
-			statements.push_back(std::move(stmt));
-		}
+		auto statements = statement_list();
 
 		if(!match("}"))
 			expect("'}'");
@@ -484,13 +511,15 @@ const Token &Parser::token() const
 
 const Token &Parser::last_token() const
 {
-	return *(it - 1);
+	unsigned offset = 1;
+	while((it - offset)->type == TokenType::Separator && (it - offset)->value == "\n")
+		offset++;
+	return *(it - offset);
 }
 
-bool Parser::advance()
+void Parser::advance()
 {
 	it++;
-	return it < end;
 }
 
 bool Parser::is_valid_index(int n) const
@@ -503,11 +532,14 @@ bool Parser::match(TokenType type)
 	if(it == end)
 		return false;
 
+	trim();
 	if(it->type == type)
 	{
 		advance();
+		trim();
 		return true;
 	}
+
 	return false;
 }
 
@@ -516,9 +548,11 @@ bool Parser::match(std::string_view value)
 	if(it == end)
 		return false;
 
+	trim();
 	if(it->value == value)
 	{
 		advance();
+		trim();
 		return true;
 	}
 
@@ -527,7 +561,14 @@ bool Parser::match(std::string_view value)
 
 bool Parser::match(TokenType type, std::string_view value)
 {
+	trim();
 	return it->value == value && match(type);
+}
+
+void Parser::trim()
+{
+	while(it->type == TokenType::Separator && it->value == "\n")
+		advance();
 }
 
 void Parser::expect(std::string_view expect) const

@@ -49,6 +49,7 @@ private:
 	std::unique_ptr<Expression> literal(const Token &token);
 
 	// general
+	std::vector<std::unique_ptr<Statement>> statement_list();
 	std::unique_ptr<Block> block();
 	std::unique_ptr<Parameter> parameter();
 	std::unique_ptr<Type> type_annotation();
@@ -57,10 +58,11 @@ private:
 	// utility
 	const Token &token() const;
 	const Token &last_token() const;
-	bool advance();
+	void advance();
 	bool is_valid_index(int n) const;
 	bool match(TokenType type);
 	bool match(std::string_view value);
 	bool match(TokenType type, std::string_view value);
+	void trim();
 	void expect(std::string_view expect) const;
 };
