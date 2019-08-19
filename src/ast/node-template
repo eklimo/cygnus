@@ -34,6 +34,7 @@ abstract Literal : Value;
 NumberLiteral : Literal;
 StringLiteral : Literal;
 BooleanLiteral : Literal;
+UnitLiteral : Literal;
 Identifier : Value;
 FunctionCall : Expression
 {
@@ -60,6 +61,12 @@ PostfixOperator : Operator
 ReturnExpr : Expression
 {
 	std::unique_ptr<Expression> value
+};
+IfExpr : Expression
+{
+	std::unique_ptr<Expression> condition
+	std::unique_ptr<Block> if_branch
+	std::unique_ptr<Block> else_branch
 };
 
 Invalid : Node;

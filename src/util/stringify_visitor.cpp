@@ -51,6 +51,10 @@ namespace Util
 	{
 		value << "Boolean '" << node.value << "'";
 	}
+	void StringifyVisitor::visit(UnitLiteral &node)
+	{
+		value << "Unit '" << node.value << "'";
+	}
 	void StringifyVisitor::visit(Identifier &node)
 	{
 		value << "Identifier '" << node.value << "'";
@@ -74,6 +78,10 @@ namespace Util
 	void StringifyVisitor::visit(ReturnExpr &node)
 	{
 		value << "Return expression";
+	}
+	void StringifyVisitor::visit(IfExpr &node)
+	{
+		value << "If expression";
 	}
 
 	// general

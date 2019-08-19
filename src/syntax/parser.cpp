@@ -52,7 +52,8 @@ std::unique_ptr<Statement> Parser::statement()
 	(
 	    (stmt = variable_def()) ||
 	    (stmt = function_def()) ||
-	    (stmt = expr_statement())
+	    (stmt = expr_statement()) ||
+	    (stmt = block())
 	)
 		return stmt;
 
@@ -79,7 +80,7 @@ std::unique_ptr<VariableDef> Parser::variable_def()
 			auto name = std::make_unique<Identifier>(last_token().value);
 			auto typ = type_annotation();
 
-			// value, optional type annotation
+			// value
 			if(match("="))
 			{
 				auto value = expression();
@@ -136,11 +137,6 @@ std::unique_ptr<FunctionDef> Parser::function_def()
 					if(!typ)
 						expect("type");
 				}
-				else
-				{
-					// infer no return type
-					typ = std::make_unique<Type>("()");
-				}
 
 				auto body = block();
 				if(!body)
@@ -188,6 +184,8 @@ std::unique_ptr<Expression> Parser::null_denotation(const Token &tok)
 				return literal(tok);
 			else if(tok.value == "return")
 				return return_expr(tok);
+			else if(tok.value == "if")
+				return if_expr(tok);
 
 			return nullptr;
 		}
@@ -201,7 +199,18 @@ std::unique_ptr<Expression> Parser::null_denotation(const Token &tok)
 		case TokenType::Separator:
 		{
 			if(tok.value == "(")
-				return group_expr(tok);
+			{
+				auto expr = group_expr(tok);
+
+				// unit
+				if(!expr)
+					expr = literal(tok);
+
+				if(!expr)
+					expect("expression or ')'");
+
+				return std::move(expr);
+			}
 			else
 				return nullptr;
 		}
@@ -269,13 +278,15 @@ std::unique_ptr<Expression> Parser::group_expr(const Token &tok)
 	int prec = Lang::null_precedence(tok);
 
 	auto expr = expression(prec);
-	if(!expr)
-		expect("expression");
+	if(expr)
+	{
+		if(!match(")"))
+			expect("')'");
 
-	if(!match(")"))
-		expect("')'");
+		return expr;
+	}
 
-	return expr;
+	return nullptr;
 }
 
 std::unique_ptr<Expression> Parser::call_expr(const Token &tok, std::unique_ptr<Expression> left)
@@ -312,11 +323,37 @@ std::unique_ptr<Expression> Parser::call_expr(const Token &tok, std::unique_ptr<
 	return std::make_unique<FunctionCall>(cast<Expression, Identifier>(std::move(left)), std::move(arguments));
 }
 
-std::unique_ptr<Expression> Parser::return_expr(const Token &token)
+std::unique_ptr<Expression> Parser::return_expr(const Token &tok)
 {
 	auto value = expression();
 
 	return std::make_unique<ReturnExpr>(std::move(value));
+}
+
+std::unique_ptr<Expression> Parser::if_expr(const Token &tok)
+{
+	auto condition = expression();
+
+	if(condition)
+	{
+		auto if_branch = block();
+		if(if_branch)
+		{
+			std::unique_ptr<Block> else_branch;
+			if(match("else"))
+			{
+				else_branch = block();
+				if(!else_branch)
+					expect("'{'");
+			}
+
+			return std::make_unique<IfExpr>(std::move(condition), std::move(if_branch), std::move(else_branch));
+		}
+		else expect("'{'");
+	}
+	else expect("expression");
+
+	return nullptr;
 }
 
 std::unique_ptr<Expression> Parser::literal(const Token &tok)
@@ -333,6 +370,20 @@ std::unique_ptr<Expression> Parser::literal(const Token &tok)
 		{
 			if(Lang::is_boolean(tok.value))
 				return std::make_unique<BooleanLiteral>(tok.value);
+			else
+				return nullptr;
+		}
+
+		case TokenType::Separator:
+		{
+			if(tok.value == "(")
+			{
+				if(match(")"))
+				{
+					return std::make_unique<UnitLiteral>("()");
+				}
+				return nullptr;
+			}
 			else
 				return nullptr;
 		}

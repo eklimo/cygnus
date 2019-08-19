@@ -52,7 +52,7 @@ namespace Util
 		{
 			param->accept(*this);
 		}
-		node.return_type->accept(*this);
+		if(node.return_type) node.return_type->accept(*this);
 		node.body->accept(*this);
 		tab_level--;
 	}
@@ -68,6 +68,10 @@ namespace Util
 		print(str.stringify(node));
 	}
 	void PrintVisitor::visit(BooleanLiteral &node)
+	{
+		print(str.stringify(node));
+	}
+	void PrintVisitor::visit(UnitLiteral &node)
 	{
 		print(str.stringify(node));
 	}
@@ -112,6 +116,15 @@ namespace Util
 		print(str.stringify(node));
 		tab_level++;
 		node.value->accept(*this);
+		tab_level--;
+	}
+	void PrintVisitor::visit(IfExpr &node)
+	{
+		print(str.stringify(node));
+		tab_level++;
+		node.condition->accept(*this);
+		node.if_branch->accept(*this);
+		if(node.else_branch) node.else_branch->accept(*this);
 		tab_level--;
 	}
 

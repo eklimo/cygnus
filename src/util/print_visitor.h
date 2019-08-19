@@ -24,12 +24,14 @@ namespace Util
 		void visit(NumberLiteral &node);
 		void visit(StringLiteral &node);
 		void visit(BooleanLiteral &node);
+		void visit(UnitLiteral &node);
 		void visit(Identifier &node);
 		void visit(FunctionCall &node);
 		void visit(InfixOperator &node);
 		void visit(PrefixOperator &node);
 		void visit(PostfixOperator &node);
 		void visit(ReturnExpr &node);
+		void visit(IfExpr &node);
 
 		// general
 		void visit(Invalid &node);

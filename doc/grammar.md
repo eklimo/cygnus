@@ -5,6 +5,7 @@
 program = statement*
 statement = declaration-statement
           | expression-statement
+          | block
 
 declaration-statement = variable-definition
                       | function-definition
@@ -49,7 +50,9 @@ while-expression = "while" expression block
 literal = NUMBER
         | STRING
         | boolean-literal
+        | unit-literal
 boolean-literal = "true" | "false"
+unit-literal = "(" ")"
 
 
 # general

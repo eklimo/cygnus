@@ -11,7 +11,7 @@ namespace Lang
 {
 	constexpr std::string_view keywords[] = {"true", "false", "var", "func", "return", "if", "else"};
 	// descending length
-	constexpr std::string_view operators[] = {"++", "--", "+", "-", "*", "/", "="};
+	constexpr std::string_view operators[] = {"++", "--", ">=", "<=", "==", "!=", "+", "-", "*", "/", "=", ">", "<"};
 	constexpr std::string_view word_operators[] = {};
 	// descending length
 	constexpr std::string_view separators[] = {"->", "(", ")", ",", "{", "}", ":"};
@@ -70,9 +70,9 @@ namespace Lang
 			case TokenType::Operator:
 			{
 				if(sym == "+" || sym == "-")
-					return 30;
+					return 40;
 				else if(sym == "++" || sym == "--")
-					return 30;
+					return 40;
 				break;
 			}
 			case TokenType::Separator:
@@ -87,7 +87,7 @@ namespace Lang
 				return 0;
 			case TokenType::Keyword:
 			{
-				if(is_boolean(sym) || sym == "return")
+				if(is_boolean(sym) || sym == "return" || sym == "if")
 					return 0;
 				break;
 			}
@@ -107,10 +107,12 @@ namespace Lang
 			case TokenType::Operator:
 			{
 				if(sym == "++" || sym == "--")
-					return 40;
+					return 50;
 				else if(sym == "*" || sym == "/")
-					return 20;
+					return 30;
 				else if(sym == "+" || sym == "-")
+					return 20;
+				else if(sym == ">=" || sym == "<=" || sym == ">" || sym == "<" || sym == "==" || sym == "!=")
 					return 10;
 				else if(sym == "=")
 					return 1;

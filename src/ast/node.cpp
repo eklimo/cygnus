@@ -50,6 +50,10 @@ void BooleanLiteral::accept(Visitor &v)
 {
 	v.visit(*this);
 }
+void UnitLiteral::accept(Visitor &v)
+{
+	v.visit(*this);
+}
 void Identifier::accept(Visitor &v)
 {
 	v.visit(*this);
@@ -95,6 +99,14 @@ ReturnExpr::ReturnExpr(std::unique_ptr<Expression> _value)
 {
 }
 void ReturnExpr::accept(Visitor &v)
+{
+	v.visit(*this);
+}
+IfExpr::IfExpr(std::unique_ptr<Expression> _condition, std::unique_ptr<Block> _if_branch, std::unique_ptr<Block> _else_branch)
+	: condition(std::move(_condition)), if_branch(std::move(_if_branch)), else_branch(std::move(_else_branch))
+{
+}
+void IfExpr::accept(Visitor &v)
 {
 	v.visit(*this);
 }

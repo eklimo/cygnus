@@ -71,6 +71,11 @@ struct BooleanLiteral : public Literal
 	using Literal::Literal;
 	void accept(Visitor &v) override;
 };
+struct UnitLiteral : public Literal
+{
+	using Literal::Literal;
+	void accept(Visitor &v) override;
+};
 struct Identifier : public Value
 {
 	using Value::Value;
@@ -111,6 +116,14 @@ struct ReturnExpr : public Expression
 {
 	std::unique_ptr<Expression> value;
 	ReturnExpr(std::unique_ptr<Expression> value);
+	void accept(Visitor &v) override;
+};
+struct IfExpr : public Expression
+{
+	std::unique_ptr<Expression> condition;
+	std::unique_ptr<Block> if_branch;
+	std::unique_ptr<Block> else_branch;
+	IfExpr(std::unique_ptr<Expression> condition, std::unique_ptr<Block> if_branch, std::unique_ptr<Block> else_branch);
 	void accept(Visitor &v) override;
 };
 struct Invalid : public Node
