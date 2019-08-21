@@ -5,6 +5,7 @@
 #include <string_view>
 #include <exception>
 #include <sstream>
+#include <optional>
 
 #include "../ast/node.h"
 #include "../util/error.h"
@@ -60,9 +61,9 @@ private:
 	const Token &last_token() const;
 	void advance();
 	bool is_valid_index(int n) const;
-	bool match(TokenType type);
-	bool match(std::string_view value);
-	bool match(TokenType type, std::string_view value);
+	std::optional<const Token> match(TokenType type);
+	std::optional<const Token> match(std::string_view value);
+	std::optional<const Token> match(TokenType type, std::string_view value);
 	void trim();
 	void expect(std::string_view expect) const;
 };

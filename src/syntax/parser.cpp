@@ -68,9 +68,10 @@ std::unique_ptr<VariableDef> Parser::variable_def()
 {
 	if(match("var"))
 	{
-		if(!match(TokenType::Identifier))
+		auto name_token = match(TokenType::Identifier);
+		if(!name_token)
 			expect("name");
-		auto name = std::make_unique<Identifier>(last_token().value);
+		auto name = std::make_unique<Identifier>(name_token->value);
 
 		auto typ = type_annotation();
 
@@ -95,9 +96,10 @@ std::unique_ptr<FunctionDef> Parser::function_def()
 {
 	if(match("func"))
 	{
-		if(!match(TokenType::Identifier))
+		auto name_token = match(TokenType::Identifier);
+		if(!name_token)
 			expect("name");
-		auto name = std::make_unique<Identifier>(last_token().value);
+		auto name = std::make_unique<Identifier>(name_token->value);
 
 		if(!match("("))
 			expect("'('");
@@ -452,9 +454,10 @@ std::unique_ptr<Block> Parser::block()
 
 std::unique_ptr<Parameter> Parser::parameter()
 {
-	if(match(TokenType::Identifier))
+	auto name_token = match(TokenType::Identifier);
+	if(name_token)
 	{
-		auto name = std::make_unique<Identifier>(last_token().value);
+		auto name = std::make_unique<Identifier>(name_token->value);
 
 		auto type = type_annotation();
 		if(!type)
@@ -483,15 +486,16 @@ std::unique_ptr<Type> Parser::type_annotation()
 std::unique_ptr<Type> Parser::type()
 {
 	// name
-	if(match(TokenType::Identifier))
+	auto name_token = match(TokenType::Identifier);
+	if(name_token)
 	{
-		return std::make_unique<Type>(last_token().value);
+		return std::make_unique<Type>(name_token->value);
 	}
 	// unit
 	else if(match("("))
 	{
 		if(!match(")"))
-			throw Error::At(it - 1, "unexpected symbol '", last_token().value, "'");
+			throw Error::At(it - 1, "unexpected symbol '('");
 
 		return std::make_unique<Type>("()");
 	}
@@ -527,42 +531,45 @@ bool Parser::is_valid_index(int n) const
 	return it + n >= begin && it + n <= end;
 }
 
-bool Parser::match(TokenType type)
+std::optional<const Token> Parser::match(TokenType type)
 {
 	if(it == end)
-		return false;
+		return {};
 
 	trim();
 	if(it->type == type)
 	{
+		auto old = it;
 		advance();
 		trim();
-		return true;
+		return *old;
 	}
 
-	return false;
+	return {};
 }
 
-bool Parser::match(std::string_view value)
+std::optional<const Token> Parser::match(std::string_view value)
 {
 	if(it == end)
-		return false;
+		return {};
 
 	trim();
 	if(it->value == value)
 	{
+		auto old = it;
 		advance();
 		trim();
-		return true;
+		return *old;
 	}
 
-	return false;
+	return {};
 }
 
-bool Parser::match(TokenType type, std::string_view value)
+std::optional<const Token> Parser::match(TokenType type, std::string_view value)
 {
 	trim();
-	return it->value == value && match(type);
+	if(it->value == value) return match(type);
+	else return {};
 }
 
 void Parser::trim()
