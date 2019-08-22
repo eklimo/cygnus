@@ -65,7 +65,7 @@ namespace Util
 
 			stream << "\033[34m";
 			stream << std::setw(side_width);
-			stream  << (i + begin.line - error_line_index) << " | ";
+			stream << (i + begin.line - error_line_index) << " | ";
 
 			if(i == error_line_index)
 			{
@@ -102,5 +102,6 @@ namespace Util
 		{
 			std::cout << line << std::endl;
 		}
+		std::cout << std::endl;
 	}
 }

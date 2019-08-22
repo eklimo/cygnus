@@ -9,6 +9,12 @@
 
 namespace Compiler
 {
+	void terminate()
+	{
+		Logger::get().error("terminating");
+		std::exit(1);
+	}
+
 	void compile(std::string_view file, std::string_view source)
 	{
 		// lexer
@@ -32,17 +38,10 @@ namespace Compiler
 
 		// parser
 		Logger::get().debug("Parsing '", file, "'");
-		Parser parser(tokens);
-		std::unique_ptr<Node> ast;
-		try
-		{
-			ast = parser.parse();
-		}
-		catch(Util::Error &e)
-		{
-			e.print(file, source);
-			std::exit(0);
-		}
+		Parser parser(tokens, file, source);
+		auto ast = parser.parse();
+		if(!ast) terminate();
+
 		Util::PrintVisitor printer;
 		Logger::get().debug("AST:");
 		ast->accept(printer);

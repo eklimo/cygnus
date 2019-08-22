@@ -19,12 +19,14 @@ using Lexer::TokenType;
 class Parser
 {
 public:
-	explicit Parser(const std::vector<Token> &tokens);
+	Parser(const std::vector<Token> &tokens, std::string_view file, std::string_view source);
 	std::unique_ptr<Program> parse();
 
 private:
 	std::vector<Token>::const_iterator it;
 	const std::vector<Token>::const_iterator begin, end;
+	std::string_view file, source;
+	bool error;
 
 	std::unique_ptr<Program> program();
 	std::unique_ptr<Statement> statement();
@@ -65,5 +67,6 @@ private:
 	std::optional<const Token> match(std::string_view value);
 	std::optional<const Token> match(TokenType type, std::string_view value);
 	void trim();
-	void expect(std::string_view expect) const;
+	Util::Error expect(std::string_view expect, bool _throw = true);
+	std::unique_ptr<Statement> panic();
 };

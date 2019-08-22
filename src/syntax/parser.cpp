@@ -6,10 +6,13 @@
 
 using Util::Error;
 
-Parser::Parser(const std::vector<Token> &tokens)
+Parser::Parser(const std::vector<Token> &tokens, std::string_view file, std::string_view source)
 	: it(tokens.cbegin()),
 	  begin(tokens.cbegin()),
-	  end(tokens.cend())
+	  end(tokens.cend()),
+	  file(file),
+	  source(source),
+	  error(false)
 {}
 
 template<typename Base, typename Derived>
@@ -24,9 +27,6 @@ std::unique_ptr<Program> Parser::parse()
 {
 	auto root = program();
 
-	if(it < end)
-		throw Error::At(it, "unexpected symbol '", it->value, "'");
-
 	return root;
 }
 
@@ -34,7 +34,20 @@ std::unique_ptr<Program> Parser::program()
 {
 	auto statements = statement_list();
 
-	return std::make_unique<Program>(std::move(statements));
+	if(it < end)
+	{
+		error = true;
+		Error::At(it, "unexpected symbol '", it->value, "'").print(file, source);
+
+		// find more errors
+		advance();
+		program();
+	}
+
+	if(error)
+		return nullptr;
+	else
+		return std::make_unique<Program>(std::move(statements));
 }
 
 // statements
@@ -42,13 +55,22 @@ std::unique_ptr<Program> Parser::program()
 std::unique_ptr<Statement> Parser::statement()
 {
 	std::unique_ptr<Statement> stmt;
-	if
-	(
-	    (stmt = variable_def()) ||
-	    (stmt = function_def()) ||
-	    (stmt = expr_statement()) ||
-	    (stmt = block())
-	) return stmt;
+	try
+	{
+		if
+		(
+		    (stmt = variable_def()) ||
+		    (stmt = function_def()) ||
+		    (stmt = expr_statement()) ||
+		    (stmt = block())
+		) return stmt;
+	}
+	catch(Util::Error &e)
+	{
+		error = true;
+		e.print(file, source);
+		return panic();
+	}
 
 	return nullptr;
 }
@@ -429,7 +451,9 @@ std::vector<std::unique_ptr<Statement>> Parser::statement_list()
 			if(stmt && sep->value != "\n")
 			{
 				it = sep + 1;
-				expect("newline or ';'");
+				expect("newline or ';'", false).print(file, source);
+				advance();
+				stmt = panic();
 			}
 		}
 	}
@@ -578,19 +602,43 @@ void Parser::trim()
 		advance();
 }
 
-void Parser::expect(std::string_view expect) const
+Util::Error Parser::expect(std::string_view expect, bool _throw)
 {
+	error = true;
+	
+	trim();
+
 	std::string value = "'" + std::string(it->value) + "'";
 	switch(it->type)
 	{
 		case TokenType::Keyword:
 			value = "keyword " + value;
+		case TokenType::String:
+			value = "string " + value;
 		default:
 			break;
 	}
 
-	if(it->type != TokenType::Invalid)
-		throw Error::At(it, "expected ", expect, ", found ", value);
+	auto error =
+	    it->type == TokenType::Invalid
+	    ? Error::After(it - 2, "expected ", expect)
+	    : Error::At(it, "expected ", expect, ", found ", value);
+
+	if(_throw)
+		throw error;
 	else
-		throw Error::After(it - 1, "expected ", expect);
+		return error;
+}
+
+std::unique_ptr<Statement> Parser::panic()
+{
+	std::unique_ptr<Statement> stmt;
+
+	while(!(it->type == TokenType::Separator && (it->value == "\n" || it->value == ";")) && it < end)
+		advance();
+	if(it->value == ";")
+		advance();
+
+	stmt = statement();
+	return stmt;
 }

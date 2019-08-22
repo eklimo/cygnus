@@ -35,7 +35,7 @@ namespace Util
 		template<typename... Args>
 		static Error After(const std::vector<Lexer::Token>::const_iterator it, Args &&... args)
 		{
-			unsigned column  = 0;
+			unsigned column = 0;
 			switch(it->type)
 			{
 				case Lexer::TokenType::Invalid:
