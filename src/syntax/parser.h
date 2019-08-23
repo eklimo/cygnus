@@ -3,28 +3,24 @@
 #include <vector>
 #include <memory>
 #include <string_view>
-#include <exception>
-#include <sstream>
 #include <optional>
 
-#include "ast/node.h"
 #include "util/error.h"
-#include "util/stringify_visitor.h"
-#include "lexer.h"
+#include "ast/node.h"
 #include "token.h"
-
-using Lexer::Token;
-using Lexer::TokenType;
 
 class Parser
 {
 public:
 	Parser(const std::vector<Token> &tokens, std::string_view file, std::string_view source);
+	bool failed() const;
+
 	std::unique_ptr<Program> parse();
 
 private:
 	std::vector<Token>::const_iterator it;
 	const std::vector<Token>::const_iterator begin, end;
+
 	std::string_view file, source;
 	bool error;
 

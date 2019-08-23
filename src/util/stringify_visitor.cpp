@@ -30,38 +30,38 @@ namespace Util
 	}
 	void StringifyVisitor::visit(VariableDef &node)
 	{
-		value << "Variable definition";
+		value << "Variable definition '" << node.name->token.value << "'";
 	}
 	void StringifyVisitor::visit(FunctionDef &node)
 	{
-		value << "Function definition";
+		value << "Function definition '" << node.name->token.value << "'";
 	}
 
 	// expressions
 
 	void StringifyVisitor::visit(NumberLiteral &node)
 	{
-		value << "Number '" << node.value << "'";
+		value << "Number '" << node.token.value << "'";
 	}
 	void StringifyVisitor::visit(StringLiteral &node)
 	{
-		value << "String '" << node.value << "'";
+		value << "String '" << node.token.value << "'";
 	}
 	void StringifyVisitor::visit(BooleanLiteral &node)
 	{
-		value << "Boolean '" << node.value << "'";
+		value << "Boolean '" << node.token.value << "'";
 	}
 	void StringifyVisitor::visit(UnitLiteral &node)
 	{
-		value << "Unit '" << node.value << "'";
+		value << "Unit '" << node.token.value << "'";
 	}
 	void StringifyVisitor::visit(Identifier &node)
 	{
-		value << "Identifier '" << node.value << "'";
+		value << "Identifier '" << node.token.value << "'";
 	}
 	void StringifyVisitor::visit(FunctionCall &node)
 	{
-		value << "Function call '" << node.name->value << "'";
+		value << "Function call '" << node.name->token.value << "'";
 	}
 	void StringifyVisitor::visit(InfixOperator &node)
 	{
@@ -100,7 +100,7 @@ namespace Util
 	}
 	void StringifyVisitor::visit(Parameter &node)
 	{
-		value << "Parameter";
+		value << "Parameter '" << node.name->token.value << "'";
 	}
 	void StringifyVisitor::visit(Type &node)
 	{

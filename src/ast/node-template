@@ -28,14 +28,17 @@ FunctionDef : Statement
 
 abstract Value : Expression
 {
-	std::string_view value
+	Token token
 };
 abstract Literal : Value;
 NumberLiteral : Literal;
 StringLiteral : Literal;
 BooleanLiteral : Literal;
 UnitLiteral : Literal;
-Identifier : Value;
+Identifier : Value
+{
+	std::shared_ptr<SymbolData> symbol
+};
 FunctionCall : Expression
 {
 	std::unique_ptr<Identifier> name

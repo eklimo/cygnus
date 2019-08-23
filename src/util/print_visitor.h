@@ -2,10 +2,10 @@
 
 #include <string>
 
+#include "log.h"
+#include "stringify_visitor.h"
 #include "ast/visitor.h"
 #include "ast/node.h"
-#include "stringify_visitor.h"
-#include "log.h"
 
 namespace Util
 {
@@ -41,9 +41,8 @@ namespace Util
 		void visit(Type &node);
 
 	private:
-		unsigned tab_level = 0;
 		StringifyVisitor str;
-		const std::string prefix_tab() const;
+		unsigned tab_level = 0;
 
 		template<typename... Args>
 		inline void print(Args &&... args) const

@@ -9,6 +9,14 @@
 
 namespace Util
 {
+	Error::Error()
+		: std::runtime_error(""),
+		  begin({ 0, 0 }),
+		  end({ 0, 0 }),
+		  message("")
+	{
+	}
+
 	std::string Error::what() noexcept
 	{
 		return message.str();
@@ -16,22 +24,20 @@ namespace Util
 
 	void Error::print(std::string_view file, std::string_view source)
 	{
+		if(what().empty()) return;
+
+		// print error only
+		if(begin.line == 0 || begin.column == 0 || end.line == 0 || end.column == 0)
+		{
+			Logger::get().error(what());
+			std::cout << std::endl;
+			return;
+		}
+
 		std::stringstream stream;
 
-		if(begin.line == 0 || begin.column == 0)
-		{
-			stream << "Invalid file location 'begin': ";
-			stream << begin;
-			throw std::out_of_range(stream.str());
-		}
-		else if(end.line == 0 || end.column == 0)
-		{
-			stream << "Invalid file location 'end': ";
-			stream << end;
-			throw std::out_of_range(stream.str());
-		}
-
 		constexpr int radius = 1;
+		const char pointer_char = '^';
 
 		unsigned error_line_index = -1;
 
@@ -72,7 +78,7 @@ namespace Util
 				stream << "\033[0m" << line.substr(0, begin.column - 1);
 				if(line[begin.column - 1])
 				{
-					stream << "\033[31;1m" << line.substr(begin.column - 1, end.column - begin.column);
+					stream << "\033[1;31m" << line.substr(begin.column - 1, end.column - begin.column);
 					stream << "\033[0m" << line.substr(end.column - 1);
 				}
 
@@ -81,8 +87,8 @@ namespace Util
 				stream << std::setw(side_width) << "";
 				stream << "\033[34m |";
 				stream << "\033[0m" << std::setw(begin.column) << "";
-				std::string pointer(begin == end ? 1 : end.column - begin.column, '^');
-				stream << "\033[31;1m" << pointer << " " << what() << "\033[0m";
+				std::string pointer(begin == end ? 1 : end.column - begin.column, pointer_char);
+				stream << "\033[1;31m" << pointer << " \033[0;31m" << what() << "\033[0m";
 			}
 			else
 			{

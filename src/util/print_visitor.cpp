@@ -2,16 +2,6 @@
 
 namespace Util
 {
-	const std::string PrintVisitor::prefix_tab() const
-	{
-		std::string s = "";
-		for(unsigned i = 0; i < tab_level; i++)
-		{
-			s += "  ";
-		}
-		return s;
-	}
-
 	// main
 
 	void PrintVisitor::visit(Program &node)
@@ -38,7 +28,6 @@ namespace Util
 	{
 		print(str.stringify(node));
 		tab_level++;
-		node.name->accept(*this);
 		if(node.type) node.type->accept(*this);
 		if(node.value) node.value->accept(*this);
 		tab_level--;
@@ -47,7 +36,6 @@ namespace Util
 	{
 		print(str.stringify(node));
 		tab_level++;
-		node.name->accept(*this);
 		for(const auto &param : node.parameters)
 		{
 			param->accept(*this);
@@ -115,7 +103,7 @@ namespace Util
 	{
 		print(str.stringify(node));
 		tab_level++;
-		node.value->accept(*this);
+		if(node.value) node.value->accept(*this);
 		tab_level--;
 	}
 	void PrintVisitor::visit(IfExpr &node)
@@ -156,7 +144,6 @@ namespace Util
 	{
 		print(str.stringify(node));
 		tab_level++;
-		node.name->accept(*this);
 		node.type->accept(*this);
 		tab_level--;
 	}

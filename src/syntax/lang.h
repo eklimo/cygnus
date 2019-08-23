@@ -4,9 +4,6 @@
 
 #include "syntax/token.h"
 
-using Lexer::Token;
-using Lexer::TokenType;
-
 namespace Lang
 {
 	constexpr std::string_view keywords[] = {"true", "false", "var", "func", "return", "if", "else", "while"};

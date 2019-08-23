@@ -4,6 +4,7 @@
 
 #include "log.h"
 #include "util/util.h"
+#include "util/error.h"
 #include "compiler.h"
 
 namespace CLI
@@ -48,7 +49,7 @@ Options:
 				}
 				else
 				{
-					Logger::get().warn("Invalid option '", arg, "'");
+					Logger::get().warn("invalid option '", arg, "'");
 				}
 			}
 			else
@@ -80,7 +81,7 @@ Options:
 
 		if(options.inputs.empty())
 		{
-			Logger::get().error("No inputs given");
+			Logger::get().error("no inputs given");
 			Logger::get().info("Run 'cygnus --help' for usage");
 			std::exit(0);
 		}
@@ -92,12 +93,12 @@ Options:
 			std::string_view ext = input.substr(dot_index + 1);
 			if(dot_index == std::string_view::npos || ext == "")
 			{
-				Logger::get().error("Invalid file format for '", input, "'");
+				Logger::get().error("invalid file format for '", input, "'");
 				continue;
 			}
 			else if(ext != "cy")
 			{
-				Logger::get().error("Invalid file format '", ext, "' for '", input, "'");
+				Logger::get().error("invalid file format '", ext, "' for '", input, "'");
 				continue;
 			}
 
@@ -105,12 +106,21 @@ Options:
 			{
 				std::string source = Util::read_file(input);
 				Logger::get().info("Compiling file '", input, "'");
-				Compiler::compile(input, source);
+				try
+				{
+					Compiler::compile(input, source);
+				}
+				catch(Util::Error &e)
+				{
+					e.print(input, source);
+					Logger::get().error("terminating compilation for file '", input, "'");
+				}
 			}
 			catch(std::ifstream::failure &e)
 			{
-				Logger::get().error("Unable to open file '", input, "'");
+				Logger::get().error("unable to open file '", input, "'");
 			}
+
 		}
 	}
 }

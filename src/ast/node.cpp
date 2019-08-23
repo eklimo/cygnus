@@ -34,8 +34,8 @@ void FunctionDef::accept(Visitor &v)
 {
 	v.visit(*this);
 }
-Value::Value(std::string_view _value)
-	: value(_value)
+Value::Value(Token _token)
+	: token(_token)
 {
 }
 void NumberLiteral::accept(Visitor &v)
@@ -53,6 +53,10 @@ void BooleanLiteral::accept(Visitor &v)
 void UnitLiteral::accept(Visitor &v)
 {
 	v.visit(*this);
+}
+Identifier::Identifier(Token token, std::shared_ptr<SymbolData> _symbol)
+	: Value(token), symbol(_symbol)
+{
 }
 void Identifier::accept(Visitor &v)
 {

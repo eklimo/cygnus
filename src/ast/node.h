@@ -7,6 +7,8 @@
 #include <vector>
 
 #include "visitor.h"
+#include "syntax/token.h"
+#include "semantic/symdata.h"
 
 struct Node
 {
@@ -49,8 +51,8 @@ struct FunctionDef : public Statement
 };
 struct Value : public Expression
 {
-	std::string_view value;
-	Value(std::string_view value);
+	Token token;
+	Value(Token token);
 };
 struct Literal : public Value
 {
@@ -78,7 +80,8 @@ struct UnitLiteral : public Literal
 };
 struct Identifier : public Value
 {
-	using Value::Value;
+	std::shared_ptr<SymbolData> symbol;
+	Identifier(Token token, std::shared_ptr<SymbolData> symbol);
 	void accept(Visitor &v) override;
 };
 struct FunctionCall : public Expression

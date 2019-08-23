@@ -3,7 +3,6 @@
 #include <exception>
 #include <sstream>
 #include <string_view>
-#include <vector>
 
 #include "util.h"
 #include "syntax/token.h"
@@ -16,42 +15,39 @@ namespace Util
 	{
 	public:
 		template<typename... Args>
-		static Error At(const std::vector<Lexer::Token>::const_iterator it, Args &&... args)
+		static Error At(const Token &token, Args &&... args)
 		{
-			if(it->type == Lexer::TokenType::Invalid)
-				return After(it - 1, std::forward<Args>(args)...);
-
-			auto begin = it->location;
+			auto begin = token.location;
 
 			FileLocation end
 			(
-			    it->location.line,
-			    it->location.column + it->value.length() + (it->type == Lexer::TokenType::String ? 2 : 0)
+			    token.location.line,
+			    token.location.column + token.value.length() + (token.type == TokenType::String ? 2 : 0)
 			);
 
 			return Error(begin, end, std::forward<Args>(args)...);
 		}
 
 		template<typename... Args>
-		static Error After(const std::vector<Lexer::Token>::const_iterator it, Args &&... args)
+		static Error After(const Token &token, Args &&... args)
 		{
 			unsigned column = 0;
-			switch(it->type)
+			switch(token.type)
 			{
-				case Lexer::TokenType::Invalid:
-					column = it->location.column;
+				case TokenType::Invalid:
+					column = token.location.column;
 					break;
-				case Lexer::TokenType::String:
-					column = it->location.column + it->value.length() + 2;
+				case TokenType::String:
+					column = token.location.column + token.value.length() + 2;
 					break;
 				default:
-					column = it->location.column + it->value.length();
+					column = token.location.column + token.value.length();
 					break;
 			}
 
 			FileLocation loc
 			(
-			    it->location.line,
+			    token.location.line,
 			    column
 			);
 
@@ -74,7 +70,10 @@ namespace Util
 			.line = _begin.line,
 			.column = _begin.column + 1
 		}, std::forward<Args>(args)...)
-		{}
+		{
+		}
+
+		Error();
 
 		std::string what() noexcept;
 

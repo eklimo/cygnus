@@ -63,6 +63,8 @@ def write_node_header():
         file.write("#include <vector>\n")
         file.write("\n")
         file.write('#include "visitor.h"\n')
+        file.write('#include "syntax/token.h"\n')
+        file.write('#include "semantic/symdata.h"\n')
         file.write("\n")
 
         def write_struct(struct):

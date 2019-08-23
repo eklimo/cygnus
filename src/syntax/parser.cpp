@@ -13,7 +13,13 @@ Parser::Parser(const std::vector<Token> &tokens, std::string_view file, std::str
 	  file(file),
 	  source(source),
 	  error(false)
-{}
+{
+}
+
+bool Parser::failed() const
+{
+	return error;
+}
 
 template<typename Base, typename Derived>
 std::unique_ptr<Derived> cast(typename std::remove_reference<std::unique_ptr<Base> &>::type p)
@@ -37,17 +43,14 @@ std::unique_ptr<Program> Parser::program()
 	if(it < end)
 	{
 		error = true;
-		Error::At(it, "unexpected symbol '", it->value, "'").print(file, source);
+		Error::At(*it, "unexpected symbol '", it->value, "'").print(file, source);
 
 		// find more errors
 		advance();
 		program();
 	}
 
-	if(error)
-		return nullptr;
-	else
-		return std::make_unique<Program>(std::move(statements));
+	return std::make_unique<Program>(std::move(statements));
 }
 
 // statements
@@ -93,7 +96,7 @@ std::unique_ptr<VariableDef> Parser::variable_def()
 		auto name_token = match(TokenType::Identifier);
 		if(!name_token)
 			expect("name");
-		auto name = std::make_unique<Identifier>(name_token->value);
+		auto name = std::make_unique<Identifier>(*name_token, nullptr);
 
 		auto typ = type_annotation();
 
@@ -121,7 +124,7 @@ std::unique_ptr<FunctionDef> Parser::function_def()
 		auto name_token = match(TokenType::Identifier);
 		if(!name_token)
 			expect("name");
-		auto name = std::make_unique<Identifier>(name_token->value);
+		auto name = std::make_unique<Identifier>(*name_token, nullptr);
 
 		if(!match("("))
 			expect("'('");
@@ -209,7 +212,7 @@ std::unique_ptr<Expression> Parser::null_denotation(const Token &tok)
 		}
 
 		case TokenType::Identifier:
-			return std::make_unique<Identifier>(tok.value);
+			return std::make_unique<Identifier>(tok, nullptr);
 
 		case TokenType::Operator:
 			return prefix_operator_expr(tok);
@@ -314,7 +317,8 @@ std::unique_ptr<Expression> Parser::call_expr(const Token &tok, std::unique_ptr<
 	{
 		if((it - 2)->type != TokenType::Identifier)
 		{
-			throw Error::At(it - 1, "unexpected symbol '", last_token().value, "'");
+			error = true;
+			Error::At(*(it - 1), "unexpected symbol '", last_token().value, "'").print(file, source);
 		}
 	}
 
@@ -387,15 +391,15 @@ std::unique_ptr<Expression> Parser::literal(const Token &tok)
 	switch(tok.type)
 	{
 		case TokenType::Number:
-			return std::make_unique<NumberLiteral>(tok.value);
+			return std::make_unique<NumberLiteral>(tok);
 
 		case TokenType::String:
-			return std::make_unique<StringLiteral>(tok.value);
+			return std::make_unique<StringLiteral>(tok);
 
 		case TokenType::Keyword:
 		{
 			if(Lang::is_boolean(tok.value))
-				return std::make_unique<BooleanLiteral>(tok.value);
+				return std::make_unique<BooleanLiteral>(tok);
 			else
 				return nullptr;
 		}
@@ -407,7 +411,12 @@ std::unique_ptr<Expression> Parser::literal(const Token &tok)
 			{
 				if(match(")"))
 				{
-					return std::make_unique<UnitLiteral>("()");
+					return std::make_unique<UnitLiteral>(Token
+					{
+						.type = TokenType::Separator,
+						.value = "()",
+						.location = tok.location
+					});
 				}
 
 				return nullptr;
@@ -481,7 +490,7 @@ std::unique_ptr<Parameter> Parser::parameter()
 	auto name_token = match(TokenType::Identifier);
 	if(name_token)
 	{
-		auto name = std::make_unique<Identifier>(name_token->value);
+		auto name = std::make_unique<Identifier>(*name_token, nullptr);
 
 		auto type = type_annotation();
 		if(!type)
@@ -519,7 +528,10 @@ std::unique_ptr<Type> Parser::type()
 	else if(match("("))
 	{
 		if(!match(")"))
-			throw Error::At(it - 1, "unexpected symbol '('");
+		{
+			error = true;
+			Error::At(*(it - 1), "unexpected symbol '('");
+		}
 
 		return std::make_unique<Type>("()");
 	}
@@ -605,7 +617,7 @@ void Parser::trim()
 Util::Error Parser::expect(std::string_view expect, bool _throw)
 {
 	error = true;
-	
+
 	trim();
 
 	std::string value = "'" + std::string(it->value) + "'";
@@ -613,16 +625,18 @@ Util::Error Parser::expect(std::string_view expect, bool _throw)
 	{
 		case TokenType::Keyword:
 			value = "keyword " + value;
+			break;
 		case TokenType::String:
 			value = "string " + value;
+			break;
 		default:
 			break;
 	}
 
 	auto error =
 	    it->type == TokenType::Invalid
-	    ? Error::After(it - 2, "expected ", expect)
-	    : Error::At(it, "expected ", expect, ", found ", value);
+	    ? Error::After(*(it - 2), "expected ", expect)
+	    : Error::At(*it, "expected ", expect, ", found ", value);
 
 	if(_throw)
 		throw error;
