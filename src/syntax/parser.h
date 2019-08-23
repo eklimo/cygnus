@@ -7,9 +7,9 @@
 #include <sstream>
 #include <optional>
 
-#include "../ast/node.h"
-#include "../util/error.h"
-#include "../util/stringify_visitor.h"
+#include "ast/node.h"
+#include "util/error.h"
+#include "util/stringify_visitor.h"
 #include "lexer.h"
 #include "token.h"
 

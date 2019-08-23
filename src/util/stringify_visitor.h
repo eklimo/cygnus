@@ -3,9 +3,9 @@
 #include <string>
 #include <sstream>
 
-#include "../ast/visitor.h"
-#include "../ast/node.h"
-#include "../log.h"
+#include "ast/visitor.h"
+#include "ast/node.h"
+#include "log.h"
 
 namespace Util
 {

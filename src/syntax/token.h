@@ -2,7 +2,7 @@
 
 #include <string_view>
 
-#include "../util/util.h"
+#include "util/util.h"
 
 namespace Lexer
 {

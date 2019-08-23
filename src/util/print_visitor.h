@@ -2,10 +2,10 @@
 
 #include <string>
 
-#include "../ast/visitor.h"
-#include "../ast/node.h"
+#include "ast/visitor.h"
+#include "ast/node.h"
 #include "stringify_visitor.h"
-#include "../log.h"
+#include "log.h"
 
 namespace Util
 {

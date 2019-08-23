@@ -5,7 +5,7 @@
 #include <regex>
 #include <stdexcept>
 
-#include "../log.h"
+#include "log.h"
 
 namespace Util
 {

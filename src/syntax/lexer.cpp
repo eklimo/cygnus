@@ -2,8 +2,8 @@
 
 #include <cctype>
 
-#include "../log.h"
-#include "../util/error.h"
+#include "log.h"
+#include "util/error.h"
 #include "lang.h"
 
 using Lexer::Token;

@@ -2,7 +2,7 @@
 
 #include <string_view>
 
-#include "../syntax/token.h"
+#include "syntax/token.h"
 
 using Lexer::Token;
 using Lexer::TokenType;
