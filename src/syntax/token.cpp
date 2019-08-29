@@ -1,6 +1,7 @@
 #include "token.h"
 
 #include <ostream>
+#include <regex>
 
 Token::Token(TokenType _type, std::string_view _value, Util::FileLocation _location)
 	: type(_type),
@@ -39,5 +40,5 @@ constexpr const char *type_to_string(TokenType type)
 
 std::ostream &operator<<(std::ostream &stream, const Token &token)
 {
-	return stream << "[" << type_to_string(token.type) << "] " << token.value;
+	return stream << "[" << type_to_string(token.type) << "] " << std::regex_replace(std::string(token.value), std::regex("\n"), "\\n");
 }

@@ -12,8 +12,8 @@ namespace Util
 	Error::Error()
 		: std::runtime_error(""),
 		  begin({ 0, 0 }),
-		  end({ 0, 0 }),
-		  message("")
+	end({ 0, 0 }),
+	message("")
 	{
 	}
 
@@ -54,7 +54,11 @@ namespace Util
 					// standardize tab size
 					lines.push_back(std::regex_replace(line, std::regex("\\t"), std::string(4, ' ')));
 					if(n == begin.line - 1)
+					{
 						error_line_index = m;
+						if(end.column > line.length() + 1)
+							throw std::out_of_range("column longer than line");
+					}
 					m++;
 				}
 				n++;
@@ -87,7 +91,8 @@ namespace Util
 				stream << std::setw(side_width) << "";
 				stream << "\033[34m |";
 				stream << "\033[0m" << std::setw(begin.column) << "";
-				std::string pointer(begin == end ? 1 : end.column - begin.column, pointer_char);
+				int length = begin == end ? 1 : (int)end.column - begin.column;
+				std::string pointer(length, pointer_char);
 				stream << "\033[1;31m" << pointer << " \033[0;31m" << what() << "\033[0m";
 			}
 			else

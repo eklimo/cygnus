@@ -25,25 +25,23 @@ Token Lexer::tokenize_string_literal(std::string_view::const_iterator &it, std::
 
 	Util::FileLocation initial_quote = { line, column };
 
-	if(*it == '\n')
-	{
-		error = true;
-		Util::Error(initial_quote, { line, column + (*it == '\n' ? 1 : 0) }, "unterminated string literal").print(file, source);
-	}
-
 	while(it != end && *it != '"')
 	{
+		if(*it == '\n')
+		{
+			error = true;
+			Util::Error(initial_quote, { line, column + 1 }, "unterminated string literal").print(file, source);
+
+			line++;
+			column = 0;
+			return Token();
+		}
+
 		it++;
 		length++;
 
 		if(*it == '\t') column += 4;
 		else column++;
-
-		if(*it == '\n' || it == end)
-		{
-			error = true;
-			Util::Error(initial_quote, { line, column + (*it == '\n' ? 1 : 0) }, "unterminated string literal").print(file, source);
-		}
 	}
 	// closing quotation mark
 	column++;
@@ -91,12 +89,7 @@ Token Lexer::tokenize_operator_separator(std::string_view::const_iterator &it, s
 		}
 	}
 
-	return
-	{
-		.type = TokenType::Invalid,
-		.value = "",
-		.location = { line, column }
-	};
+	return Token();
 }
 
 Token Lexer::tokenize_number_literal(std::string_view::const_iterator &it, std::string_view::const_iterator end, unsigned &line, unsigned &column)
