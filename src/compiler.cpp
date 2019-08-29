@@ -1,7 +1,7 @@
 #include "compiler.h"
 
 #include "log.h"
-#include "util/print_visitor.h"
+#include "util/printer.h"
 #include "syntax/lexer.h"
 #include "syntax/token.h"
 #include "syntax/parser.h"
@@ -32,7 +32,7 @@ namespace Compiler
 		if(parser.failed()) throw Util::Error();
 
 		Logger::get().debug("AST:");
-		Util::PrintVisitor printer;
+		Util::Printer printer;
 		ast->accept(printer);
 		std::cout << std::endl;
 

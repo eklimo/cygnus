@@ -1,15 +1,15 @@
-#include "stringify_visitor.h"
+#include "stringifier.h"
 
 namespace Util
 {
-	std::string StringifyVisitor::get()
+	std::string Stringifier::get()
 	{
 		std::string str = value.str();
 		value.str(std::string());
 		return str;
 	}
 
-	std::string StringifyVisitor::stringify(Node &node)
+	std::string Stringifier::stringify(Node &node)
 	{
 		node.accept(*this);
 		return get();
@@ -17,92 +17,92 @@ namespace Util
 
 	// main
 
-	void StringifyVisitor::visit(Program &node)
+	void Stringifier::visit(Program &node)
 	{
 		value << "Program";
 	}
 
 	// statements
 
-	void StringifyVisitor::visit(ExprStatement &node)
+	void Stringifier::visit(ExprStatement &node)
 	{
 		value << "Expression statement";
 	}
-	void StringifyVisitor::visit(VariableDef &node)
+	void Stringifier::visit(VariableDef &node)
 	{
 		value << "Variable definition '" << node.name->token.value << "'";
 	}
-	void StringifyVisitor::visit(FunctionDef &node)
+	void Stringifier::visit(FunctionDef &node)
 	{
 		value << "Function definition '" << node.name->token.value << "'";
 	}
 
 	// expressions
 
-	void StringifyVisitor::visit(NumberLiteral &node)
+	void Stringifier::visit(NumberLiteral &node)
 	{
 		value << "Number '" << node.token.value << "'";
 	}
-	void StringifyVisitor::visit(StringLiteral &node)
+	void Stringifier::visit(StringLiteral &node)
 	{
 		value << "String '" << node.token.value << "'";
 	}
-	void StringifyVisitor::visit(BooleanLiteral &node)
+	void Stringifier::visit(BooleanLiteral &node)
 	{
 		value << "Boolean '" << node.token.value << "'";
 	}
-	void StringifyVisitor::visit(UnitLiteral &node)
+	void Stringifier::visit(UnitLiteral &node)
 	{
 		value << "Unit '" << node.token.value << "'";
 	}
-	void StringifyVisitor::visit(Identifier &node)
+	void Stringifier::visit(Identifier &node)
 	{
 		value << "Identifier '" << node.token.value << "'";
 	}
-	void StringifyVisitor::visit(FunctionCall &node)
+	void Stringifier::visit(FunctionCall &node)
 	{
 		value << "Function call '" << node.name->token.value << "'";
 	}
-	void StringifyVisitor::visit(InfixOperator &node)
+	void Stringifier::visit(InfixOperator &node)
 	{
 		value << "Infix operator '" << node.symbol << "'";
 	}
-	void StringifyVisitor::visit(PrefixOperator &node)
+	void Stringifier::visit(PrefixOperator &node)
 	{
 		value << "Prefix operator '" << node.symbol << "'";
 	}
-	void StringifyVisitor::visit(PostfixOperator &node)
+	void Stringifier::visit(PostfixOperator &node)
 	{
 		value << "Postfix operator '" << node.symbol << "'";
 	}
-	void StringifyVisitor::visit(ReturnExpr &node)
+	void Stringifier::visit(ReturnExpr &node)
 	{
 		value << "Return expression";
 	}
-	void StringifyVisitor::visit(IfExpr &node)
+	void Stringifier::visit(IfExpr &node)
 	{
 		value << "If expression";
 	}
-	void StringifyVisitor::visit(WhileExpr &node)
+	void Stringifier::visit(WhileExpr &node)
 	{
 		value << "While expression";
 	}
 
 	// general
 
-	void StringifyVisitor::visit(Invalid &node)
+	void Stringifier::visit(Invalid &node)
 	{
 		value << "Invalid";
 	}
-	void StringifyVisitor::visit(Block &node)
+	void Stringifier::visit(Block &node)
 	{
 		value << "Block";
 	}
-	void StringifyVisitor::visit(Parameter &node)
+	void Stringifier::visit(Parameter &node)
 	{
 		value << "Parameter '" << node.name->token.value << "'";
 	}
-	void StringifyVisitor::visit(Type &node)
+	void Stringifier::visit(Type &node)
 	{
 		value << "Type '" << node.value << "'";
 	}

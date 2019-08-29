@@ -1,15 +1,15 @@
 #pragma once
 
 #include <string>
+#include <sstream>
 
 #include "log.h"
-#include "stringify_visitor.h"
 #include "ast/visitor.h"
 #include "ast/node.h"
 
 namespace Util
 {
-	class PrintVisitor : public Visitor
+	class Stringifier : public Visitor
 	{
 	public:
 		// main
@@ -40,14 +40,9 @@ namespace Util
 		void visit(Parameter &node);
 		void visit(Type &node);
 
+		std::string stringify(Node &node);
 	private:
-		StringifyVisitor str;
-		unsigned tab_level = 0;
-
-		template<typename... Args>
-		inline void print(Args &&... args) const
-		{
-			Logger::get().debug(std::string(3 * tab_level, ' '), std::forward<Args>(args)...);
-		}
+		std::stringstream value;
+		std::string get();
 	};
 }

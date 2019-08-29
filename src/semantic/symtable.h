@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "log.h"
-#include "util/stringify_visitor.h"
+#include "util/stringifier.h"
 #include "ast/visitor.h"
 #include "ast/node.h"
 #include "symdata.h"
@@ -55,7 +55,7 @@ private:
 	std::string_view file, source;
 	bool error;
 
-	Util::StringifyVisitor str;
+	Util::Stringifier str;
 	unsigned tab_level = 0;
 	template<typename... Args>
 	inline void print(Args &&... args) const

@@ -1,10 +1,10 @@
-#include "print_visitor.h"
+#include "printer.h"
 
 namespace Util
 {
 	// main
 
-	void PrintVisitor::visit(Program &node)
+	void Printer::visit(Program &node)
 	{
 		print(str.stringify(node));
 		tab_level++;
@@ -17,14 +17,14 @@ namespace Util
 
 	// statements
 
-	void PrintVisitor::visit(ExprStatement &node)
+	void Printer::visit(ExprStatement &node)
 	{
 		print(str.stringify(node));
 		tab_level++;
 		node.expr->accept(*this);
 		tab_level--;
 	}
-	void PrintVisitor::visit(VariableDef &node)
+	void Printer::visit(VariableDef &node)
 	{
 		print(str.stringify(node));
 		tab_level++;
@@ -32,7 +32,7 @@ namespace Util
 		if(node.value) node.value->accept(*this);
 		tab_level--;
 	}
-	void PrintVisitor::visit(FunctionDef &node)
+	void Printer::visit(FunctionDef &node)
 	{
 		print(str.stringify(node));
 		tab_level++;
@@ -47,27 +47,27 @@ namespace Util
 
 	// expressions
 
-	void PrintVisitor::visit(NumberLiteral &node)
+	void Printer::visit(NumberLiteral &node)
 	{
 		print(str.stringify(node));
 	}
-	void PrintVisitor::visit(StringLiteral &node)
+	void Printer::visit(StringLiteral &node)
 	{
 		print(str.stringify(node));
 	}
-	void PrintVisitor::visit(BooleanLiteral &node)
+	void Printer::visit(BooleanLiteral &node)
 	{
 		print(str.stringify(node));
 	}
-	void PrintVisitor::visit(UnitLiteral &node)
+	void Printer::visit(UnitLiteral &node)
 	{
 		print(str.stringify(node));
 	}
-	void PrintVisitor::visit(Identifier &node)
+	void Printer::visit(Identifier &node)
 	{
 		print(str.stringify(node));
 	}
-	void PrintVisitor::visit(FunctionCall &node)
+	void Printer::visit(FunctionCall &node)
 	{
 		print(str.stringify(node));
 		tab_level++;
@@ -77,7 +77,7 @@ namespace Util
 		}
 		tab_level--;
 	}
-	void PrintVisitor::visit(InfixOperator &node)
+	void Printer::visit(InfixOperator &node)
 	{
 		print(str.stringify(node));
 		tab_level++;
@@ -85,28 +85,28 @@ namespace Util
 		node.right->accept(*this);
 		tab_level--;
 	}
-	void PrintVisitor::visit(PrefixOperator &node)
+	void Printer::visit(PrefixOperator &node)
 	{
 		print(str.stringify(node));
 		tab_level++;
 		node.operand->accept(*this);
 		tab_level--;
 	}
-	void PrintVisitor::visit(PostfixOperator &node)
+	void Printer::visit(PostfixOperator &node)
 	{
 		print(str.stringify(node));
 		tab_level++;
 		node.operand->accept(*this);
 		tab_level--;
 	}
-	void PrintVisitor::visit(ReturnExpr &node)
+	void Printer::visit(ReturnExpr &node)
 	{
 		print(str.stringify(node));
 		tab_level++;
 		if(node.value) node.value->accept(*this);
 		tab_level--;
 	}
-	void PrintVisitor::visit(IfExpr &node)
+	void Printer::visit(IfExpr &node)
 	{
 		print(str.stringify(node));
 		tab_level++;
@@ -115,7 +115,7 @@ namespace Util
 		if(node.else_branch) node.else_branch->accept(*this);
 		tab_level--;
 	}
-	void PrintVisitor::visit(WhileExpr &node)
+	void Printer::visit(WhileExpr &node)
 	{
 		print(str.stringify(node));
 		tab_level++;
@@ -126,11 +126,11 @@ namespace Util
 
 	// general
 
-	void PrintVisitor::visit(Invalid &node)
+	void Printer::visit(Invalid &node)
 	{
 		print(str.stringify(node));
 	}
-	void PrintVisitor::visit(Block &node)
+	void Printer::visit(Block &node)
 	{
 		print(str.stringify(node));
 		tab_level++;
@@ -140,14 +140,14 @@ namespace Util
 		}
 		tab_level--;
 	}
-	void PrintVisitor::visit(Parameter &node)
+	void Printer::visit(Parameter &node)
 	{
 		print(str.stringify(node));
 		tab_level++;
 		node.type->accept(*this);
 		tab_level--;
 	}
-	void PrintVisitor::visit(Type &node)
+	void Printer::visit(Type &node)
 	{
 		print(str.stringify(node));
 	}
