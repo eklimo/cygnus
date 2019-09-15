@@ -275,7 +275,7 @@ std::unique_ptr<Expression> Parser::prefix_operator_expr(const Token &tok)
 	if(!operand)
 		expect("expression");
 
-	return std::make_unique<PrefixOperator>(tok.value, std::move(operand));
+	return std::make_unique<PrefixOperator>(tok, std::move(operand));
 }
 
 std::unique_ptr<Expression> Parser::infix_operator_expr(const Token &tok, std::unique_ptr<Expression> left)
@@ -286,12 +286,12 @@ std::unique_ptr<Expression> Parser::infix_operator_expr(const Token &tok, std::u
 	if(!right)
 		expect("expression");
 
-	return std::make_unique<InfixOperator>(tok.value, std::move(left), std::move(right));
+	return std::make_unique<InfixOperator>(tok, std::move(left), std::move(right));
 }
 
 std::unique_ptr<Expression> Parser::postfix_operator_expr(const Token &tok, std::unique_ptr<Expression> left)
 {
-	return std::make_unique<PostfixOperator>(tok.value, std::move(left));
+	return std::make_unique<PostfixOperator>(tok, std::move(left));
 }
 
 std::unique_ptr<Expression> Parser::group_expr(const Token &tok)
@@ -522,20 +522,28 @@ std::unique_ptr<Type> Parser::type()
 	auto name_token = match(TokenType::Identifier);
 	if(name_token)
 	{
-		return std::make_unique<Type>(name_token->value);
+		return std::make_unique<Type>(*name_token);
 	}
 	// unit
-	else if(match("("))
+	else
 	{
-		if(!match(")"))
+		auto lparen = match("(");
+		if(lparen)
 		{
-			error = true;
-			Error::At(*(it - 1), "unexpected symbol '('");
+			if(!match(")"))
+			{
+				error = true;
+				Error::At(*(it - 1), "unexpected symbol '('");
+			}
+
+			return std::make_unique<Type>(Token
+			{
+				.type = TokenType::Separator,
+				.value = "()",
+				.location = lparen->location
+			});
 		}
-
-		return std::make_unique<Type>("()");
 	}
-
 	return nullptr;
 }
 

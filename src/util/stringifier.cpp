@@ -2,17 +2,12 @@
 
 namespace Util
 {
-	std::string Stringifier::get()
-	{
-		std::string str = value.str();
-		value.str(std::string());
-		return str;
-	}
-
 	std::string Stringifier::stringify(Node &node)
 	{
 		node.accept(*this);
-		return get();
+		auto temp = value.str();
+		value.str(std::string());
+		return temp;
 	}
 
 	// main
@@ -65,15 +60,15 @@ namespace Util
 	}
 	void Stringifier::visit(InfixOperator &node)
 	{
-		value << "Infix operator '" << node.symbol << "'";
+		value << "Infix operator '" << node.token.value << "'";
 	}
 	void Stringifier::visit(PrefixOperator &node)
 	{
-		value << "Prefix operator '" << node.symbol << "'";
+		value << "Prefix operator '" << node.token.value << "'";
 	}
 	void Stringifier::visit(PostfixOperator &node)
 	{
-		value << "Postfix operator '" << node.symbol << "'";
+		value << "Postfix operator '" << node.token.value << "'";
 	}
 	void Stringifier::visit(ReturnExpr &node)
 	{
@@ -104,6 +99,6 @@ namespace Util
 	}
 	void Stringifier::visit(Type &node)
 	{
-		value << "Type '" << node.value << "'";
+		value << "Type '" << node.token.value << "'";
 	}
 }

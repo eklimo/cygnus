@@ -46,7 +46,7 @@ FunctionCall : Expression
 };
 abstract Operator : Expression
 {
-	std::string_view symbol
+	Token token
 };
 InfixOperator : Operator
 {
@@ -89,5 +89,5 @@ Parameter : Node
 };
 Type : Node
 {
-	std::string_view value
+	Token token
 };

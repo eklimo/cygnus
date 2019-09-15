@@ -93,26 +93,26 @@ struct FunctionCall : public Expression
 };
 struct Operator : public Expression
 {
-	std::string_view symbol;
-	Operator(std::string_view symbol);
+	Token token;
+	Operator(Token token);
 };
 struct InfixOperator : public Operator
 {
 	std::unique_ptr<Expression> left;
 	std::unique_ptr<Expression> right;
-	InfixOperator(std::string_view symbol, std::unique_ptr<Expression> left, std::unique_ptr<Expression> right);
+	InfixOperator(Token token, std::unique_ptr<Expression> left, std::unique_ptr<Expression> right);
 	void accept(Visitor &v) override;
 };
 struct PrefixOperator : public Operator
 {
 	std::unique_ptr<Expression> operand;
-	PrefixOperator(std::string_view symbol, std::unique_ptr<Expression> operand);
+	PrefixOperator(Token token, std::unique_ptr<Expression> operand);
 	void accept(Visitor &v) override;
 };
 struct PostfixOperator : public Operator
 {
 	std::unique_ptr<Expression> operand;
-	PostfixOperator(std::string_view symbol, std::unique_ptr<Expression> operand);
+	PostfixOperator(Token token, std::unique_ptr<Expression> operand);
 	void accept(Visitor &v) override;
 };
 struct ReturnExpr : public Expression
@@ -155,7 +155,7 @@ struct Parameter : public Node
 };
 struct Type : public Node
 {
-	std::string_view value;
-	Type(std::string_view value);
+	Token token;
+	Type(Token token);
 	void accept(Visitor &v) override;
 };

@@ -70,28 +70,28 @@ void FunctionCall::accept(Visitor &v)
 {
 	v.visit(*this);
 }
-Operator::Operator(std::string_view _symbol)
-	: symbol(_symbol)
+Operator::Operator(Token _token)
+	: token(_token)
 {
 }
-InfixOperator::InfixOperator(std::string_view symbol, std::unique_ptr<Expression> _left, std::unique_ptr<Expression> _right)
-	: Operator(symbol), left(std::move(_left)), right(std::move(_right))
+InfixOperator::InfixOperator(Token token, std::unique_ptr<Expression> _left, std::unique_ptr<Expression> _right)
+	: Operator(token), left(std::move(_left)), right(std::move(_right))
 {
 }
 void InfixOperator::accept(Visitor &v)
 {
 	v.visit(*this);
 }
-PrefixOperator::PrefixOperator(std::string_view symbol, std::unique_ptr<Expression> _operand)
-	: Operator(symbol), operand(std::move(_operand))
+PrefixOperator::PrefixOperator(Token token, std::unique_ptr<Expression> _operand)
+	: Operator(token), operand(std::move(_operand))
 {
 }
 void PrefixOperator::accept(Visitor &v)
 {
 	v.visit(*this);
 }
-PostfixOperator::PostfixOperator(std::string_view symbol, std::unique_ptr<Expression> _operand)
-	: Operator(symbol), operand(std::move(_operand))
+PostfixOperator::PostfixOperator(Token token, std::unique_ptr<Expression> _operand)
+	: Operator(token), operand(std::move(_operand))
 {
 }
 void PostfixOperator::accept(Visitor &v)
@@ -142,8 +142,8 @@ void Parameter::accept(Visitor &v)
 {
 	v.visit(*this);
 }
-Type::Type(std::string_view _value)
-	: value(_value)
+Type::Type(Token _token)
+	: token(_token)
 {
 }
 void Type::accept(Visitor &v)

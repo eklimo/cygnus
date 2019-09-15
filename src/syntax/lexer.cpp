@@ -30,7 +30,10 @@ Token Lexer::tokenize_string_literal(std::string_view::const_iterator &it, std::
 		if(*it == '\n')
 		{
 			error = true;
-			Util::Error(initial_quote, { line, column + 1 }, "unterminated string literal").print(file, source);
+			Util::Error(
+			    initial_quote, { line, column + 1 },
+			    "unterminated string literal"
+			).print(file, source);
 
 			line++;
 			column = 0;
@@ -224,7 +227,10 @@ std::vector<Token> Lexer::tokenize()
 			if(token.type == TokenType::Invalid)
 			{
 				error = true;
-				Util::Error(token.location, "unexpected symbol '", *it, "'").print(file, source);
+				Util::Error(
+				    token.location,
+				    "unexpected symbol '", *it, "'"
+				).print(file, source);
 			}
 
 			tokens.push_back(token);
@@ -246,7 +252,10 @@ std::vector<Token> Lexer::tokenize()
 		else
 		{
 			error = true;
-			Util::Error({ line, column }, "unexpected symbol '", *it, "'").print(file, source);
+			Util::Error(
+				{ line, column },
+				"unexpected symbol '", *it, "'"
+			).print(file, source);
 		}
 	}
 

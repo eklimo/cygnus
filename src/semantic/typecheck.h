@@ -1,24 +1,16 @@
 #pragma once
 
-#include <unordered_map>
-#include <memory>
-
 #include "log.h"
 #include "util/stringifier.h"
 #include "ast/visitor.h"
 #include "ast/node.h"
-#include "symdata.h"
+#include "semantic/type.h"
 
-class SymbolTable : public Visitor
+class TypeChecker : public Visitor
 {
 public:
-	SymbolTable(std::string_view file, std::string_view source);
+	TypeChecker(std::string_view file, std::string_view source);
 	bool failed() const;
-
-	void enter_scope();
-	void exit_scope();
-	void define(Token token, Node *const node);
-	std::shared_ptr<SymbolData> find(Token token);
 
 	// main
 	void visit(Program &node) override;
@@ -49,11 +41,14 @@ public:
 	void visit(Type &node) override;
 
 private:
-	std::unordered_map<std::string_view, std::shared_ptr<SymbolData>> symbols;
-	unsigned scope_level;
-
 	std::string_view file, source;
 	bool error;
+
+	DataType type;
+	DataType get_type(Node &node);
+	DataType check_infix(const Token &token, const Expression *const left, const DataType &left_type, const Expression *const right, const DataType &right_type);
+	DataType check_prefix(const Token &token, const Expression *const operand, const DataType &operand_type);
+	DataType check_postfix(const Token &token, const Expression *const operand, const DataType &operand_type);
 
 	Util::Stringifier str;
 	unsigned tab_level = 0;

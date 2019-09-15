@@ -3,10 +3,10 @@
 #include <ostream>
 #include <regex>
 
-Token::Token(TokenType _type, std::string_view _value, Util::FileLocation _location)
-	: type(_type),
-	  value(_value),
-	  location(_location)
+Token::Token(TokenType type, std::string_view value, Util::FileLocation location)
+	: type(type),
+	  value(value),
+	  location(location)
 {}
 
 Token::Token()
@@ -33,8 +33,6 @@ constexpr const char *type_to_string(TokenType type)
 			return "opr";
 		case TokenType::Separator:
 			return "sep";
-		default:
-			return "";
 	}
 }
 

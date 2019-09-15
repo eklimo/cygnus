@@ -105,7 +105,7 @@ Options:
 			try
 			{
 				std::string source = Util::read_file(input);
-				Logger::get().info("Compiling file '", input, "'");
+				Logger::get().debug("Compiling file '", input, "'");
 				try
 				{
 					Compiler::compile(input, source);

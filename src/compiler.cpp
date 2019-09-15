@@ -1,12 +1,13 @@
 #include "compiler.h"
 
 #include "log.h"
-#include "util/printer.h"
+#include "util/treeprinter.h"
 #include "syntax/lexer.h"
 #include "syntax/token.h"
 #include "syntax/parser.h"
 #include "ast/node.h"
 #include "semantic/symtable.h"
+#include "semantic/typecheck.h"
 
 namespace Compiler
 {
@@ -17,13 +18,14 @@ namespace Compiler
 		Lexer lexer(file, source);
 		auto tokens = lexer.tokenize();
 		if(lexer.failed()) throw Util::Error();
+		else if(tokens.empty()) return;
 
 		Logger::get().debug("Tokens:");
 		for(const auto &token : tokens)
 		{
 			Logger::get().debug("  ", token);
 		}
-		std::cout << std::endl;
+		Logger::get().debug();
 
 		// parser
 		Logger::get().debug("Parsing '", file, "'");
@@ -32,14 +34,21 @@ namespace Compiler
 		if(parser.failed()) throw Util::Error();
 
 		Logger::get().debug("AST:");
-		Util::Printer printer;
+		Util::TreePrinter printer;
 		ast->accept(printer);
-		std::cout << std::endl;
+		Logger::get().debug();
 
 		// symbol table
 		Logger::get().debug("Building symbol table for '", file, "'");
 		SymbolTable sym(file, source);
 		ast->accept(sym);
 		if(sym.failed()) throw Util::Error();
+		Logger::get().debug();
+
+		// type checker
+		Logger::get().debug("Checking types for '", file, "'");
+		TypeChecker type_checker(file, source);
+		ast->accept(type_checker);
+		if(type_checker.failed()) throw Util::Error();
 	}
 }

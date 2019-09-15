@@ -57,7 +57,10 @@ void SymbolTable::define(Token token, Node *const node)
 	if(it != symbols.end() && it->second->scope_level == scope_level)
 	{
 		error = true;
-		Util::Error::At(token, "symbol '", id, "' is already defined").print(file, source);
+		Util::Error::At(
+		    token,
+		    "symbol '", id, "' is already defined"
+		).print(file, source);
 		return;
 	}
 
@@ -79,7 +82,10 @@ std::shared_ptr<SymbolData> SymbolTable::find(Token token)
 	{
 		print("Find '", id, "' -> undefined");
 		error = true;
-		Util::Error::At(token, "symbol '", id, "' is not defined").print(file, source);
+		Util::Error::At(
+		    token,
+		    "symbol '", id, "' is not defined"
+		).print(file, source);
 		return nullptr;
 	}
 
@@ -106,11 +112,11 @@ void SymbolTable::visit(ExprStatement &node)
 void SymbolTable::visit(VariableDef &node)
 {
 	if(node.value) node.value->accept(*this);
-	define(node.name->token, &node);
+	define(node.name->token, node.name.get());
 }
 void SymbolTable::visit(FunctionDef &node)
 {
-	define(node.name->token, &node);
+	define(node.name->token, node.name.get());
 	enter_scope();
 	for(const auto &param : node.parameters)
 	{
@@ -184,6 +190,6 @@ void SymbolTable::visit(Block &node)
 }
 void SymbolTable::visit(Parameter &node)
 {
-	define(node.name->token, &node);
+	define(node.name->token, node.name.get());
 }
 void SymbolTable::visit(Type &node) {}

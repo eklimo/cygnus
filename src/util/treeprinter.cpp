@@ -1,10 +1,10 @@
-#include "printer.h"
+#include "treeprinter.h"
 
 namespace Util
 {
 	// main
 
-	void Printer::visit(Program &node)
+	void TreePrinter::visit(Program &node)
 	{
 		print(str.stringify(node));
 		tab_level++;
@@ -17,14 +17,14 @@ namespace Util
 
 	// statements
 
-	void Printer::visit(ExprStatement &node)
+	void TreePrinter::visit(ExprStatement &node)
 	{
 		print(str.stringify(node));
 		tab_level++;
 		node.expr->accept(*this);
 		tab_level--;
 	}
-	void Printer::visit(VariableDef &node)
+	void TreePrinter::visit(VariableDef &node)
 	{
 		print(str.stringify(node));
 		tab_level++;
@@ -32,7 +32,7 @@ namespace Util
 		if(node.value) node.value->accept(*this);
 		tab_level--;
 	}
-	void Printer::visit(FunctionDef &node)
+	void TreePrinter::visit(FunctionDef &node)
 	{
 		print(str.stringify(node));
 		tab_level++;
@@ -47,29 +47,31 @@ namespace Util
 
 	// expressions
 
-	void Printer::visit(NumberLiteral &node)
+	void TreePrinter::visit(NumberLiteral &node)
 	{
 		print(str.stringify(node));
 	}
-	void Printer::visit(StringLiteral &node)
+	void TreePrinter::visit(StringLiteral &node)
 	{
 		print(str.stringify(node));
 	}
-	void Printer::visit(BooleanLiteral &node)
+	void TreePrinter::visit(BooleanLiteral &node)
 	{
 		print(str.stringify(node));
 	}
-	void Printer::visit(UnitLiteral &node)
+	void TreePrinter::visit(UnitLiteral &node)
 	{
 		print(str.stringify(node));
 	}
-	void Printer::visit(Identifier &node)
+	void TreePrinter::visit(Identifier &node)
 	{
 		print(str.stringify(node));
+		if(node.symbol) print("  -> ", str.stringify(*node.symbol->node));
 	}
-	void Printer::visit(FunctionCall &node)
+	void TreePrinter::visit(FunctionCall &node)
 	{
 		print(str.stringify(node));
+		if(node.name->symbol) print("  -> ", str.stringify(*node.name->symbol->node));
 		tab_level++;
 		for(const auto &arg : node.arguments)
 		{
@@ -77,7 +79,7 @@ namespace Util
 		}
 		tab_level--;
 	}
-	void Printer::visit(InfixOperator &node)
+	void TreePrinter::visit(InfixOperator &node)
 	{
 		print(str.stringify(node));
 		tab_level++;
@@ -85,28 +87,28 @@ namespace Util
 		node.right->accept(*this);
 		tab_level--;
 	}
-	void Printer::visit(PrefixOperator &node)
+	void TreePrinter::visit(PrefixOperator &node)
 	{
 		print(str.stringify(node));
 		tab_level++;
 		node.operand->accept(*this);
 		tab_level--;
 	}
-	void Printer::visit(PostfixOperator &node)
+	void TreePrinter::visit(PostfixOperator &node)
 	{
 		print(str.stringify(node));
 		tab_level++;
 		node.operand->accept(*this);
 		tab_level--;
 	}
-	void Printer::visit(ReturnExpr &node)
+	void TreePrinter::visit(ReturnExpr &node)
 	{
 		print(str.stringify(node));
 		tab_level++;
 		if(node.value) node.value->accept(*this);
 		tab_level--;
 	}
-	void Printer::visit(IfExpr &node)
+	void TreePrinter::visit(IfExpr &node)
 	{
 		print(str.stringify(node));
 		tab_level++;
@@ -115,7 +117,7 @@ namespace Util
 		if(node.else_branch) node.else_branch->accept(*this);
 		tab_level--;
 	}
-	void Printer::visit(WhileExpr &node)
+	void TreePrinter::visit(WhileExpr &node)
 	{
 		print(str.stringify(node));
 		tab_level++;
@@ -126,11 +128,11 @@ namespace Util
 
 	// general
 
-	void Printer::visit(Invalid &node)
+	void TreePrinter::visit(Invalid &node)
 	{
 		print(str.stringify(node));
 	}
-	void Printer::visit(Block &node)
+	void TreePrinter::visit(Block &node)
 	{
 		print(str.stringify(node));
 		tab_level++;
@@ -140,14 +142,14 @@ namespace Util
 		}
 		tab_level--;
 	}
-	void Printer::visit(Parameter &node)
+	void TreePrinter::visit(Parameter &node)
 	{
 		print(str.stringify(node));
 		tab_level++;
 		node.type->accept(*this);
 		tab_level--;
 	}
-	void Printer::visit(Type &node)
+	void TreePrinter::visit(Type &node)
 	{
 		print(str.stringify(node));
 	}

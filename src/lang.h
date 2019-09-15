@@ -8,12 +8,12 @@ namespace Lang
 {
 	constexpr std::string_view keywords[] = {"true", "false", "var", "func", "return", "if", "else", "while"};
 	// descending length
-	constexpr std::string_view operators[] = {"++", "--", ">=", "<=", "==", "!=", "+", "-", "*", "/", "=", ">", "<"};
-	constexpr std::string_view word_operators[] = {};
+	constexpr std::string_view operators[] = {"++", "--", "==", "!=", ">=", "<=", "&&", "||", "!", ">", "<", "+", "-", "*", "/", "%", "="};
+	constexpr std::string_view word_operators[] = {"not", "and", "or"};
 	// descending length
 	constexpr std::string_view separators[] = {"->", "(", ")", ",", "{", "}", ":", ";"};
 
-	// utility
+	// lexer
 
 	constexpr bool is_keyword(std::string_view str)
 	{
@@ -56,20 +56,18 @@ namespace Lang
 		return str == "true" || str == "false";
 	}
 
-	// operator
+	// parser
 
 	constexpr int null_precedence(const Token &token)
 	{
-		const std::string_view sym = token.value;
+		auto sym = token.value;
 
 		switch(token.type)
 		{
 			case TokenType::Operator:
 			{
-				if(sym == "+" || sym == "-")
-					return 40;
-				else if(sym == "++" || sym == "--")
-					return 40;
+				if(sym == "++" || sym == "--" || sym == "+" || sym == "-" || sym == "!" || sym == "not")
+					return 14;
 				break;
 			}
 			case TokenType::Separator:
@@ -97,20 +95,24 @@ namespace Lang
 
 	constexpr int left_precedence(const Token &token)
 	{
-		const std::string_view sym = token.value;
+		auto sym = token.value;
 
 		switch(token.type)
 		{
 			case TokenType::Operator:
 			{
 				if(sym == "++" || sym == "--")
-					return 50;
-				else if(sym == "*" || sym == "/")
-					return 30;
+					return 15;
+				else if(sym == "*" || sym == "/" || sym == "%")
+					return 12;
 				else if(sym == "+" || sym == "-")
-					return 20;
+					return 11;
 				else if(sym == ">=" || sym == "<=" || sym == ">" || sym == "<" || sym == "==" || sym == "!=")
-					return 10;
+					return 9;
+				else if(sym == "&&" || sym == "and")
+					return 4;
+				else if(sym == "||" || sym == "or")
+					return 3;
 				else if(sym == "=")
 					return 1;
 				break;
@@ -132,7 +134,7 @@ namespace Lang
 	{
 		if(token.type != TokenType::Operator) return false;
 
-		const std::string_view sym = token.value;
+		auto sym = token.value;
 
 		if(sym == "++" || sym == "--")
 			return true;
@@ -144,11 +146,28 @@ namespace Lang
 	{
 		if(token.type != TokenType::Operator) return false;
 
-		const std::string_view sym = token.value;
+		auto sym = token.value;
 
 		if(sym == "=")
 			return true;
 
 		return false;
+	}
+
+	// operator class
+
+	constexpr bool is_assignment(std::string_view op)
+	{
+		return op == "=";
+	}
+
+	constexpr bool is_arithmetic(std::string_view op)
+	{
+		return op == "+" || op == "-" || op == "*" || op == "/" || op == "%" || op == "++" || op == "--";
+	}
+
+	constexpr bool is_boolean_op(std::string_view op)
+	{
+		return op == "==" || op == "!=" || op == ">" || op == ">=" || op == "<" || op == "<=" || op == "!" || op == "not" || op == "&&" || op == "and" || op == "||" || op == "or";
 	}
 }

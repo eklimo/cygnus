@@ -1,19 +1,17 @@
 #pragma once
 
 #include <string>
-#include <sstream>
 
 #include "log.h"
+#include "stringifier.h"
 #include "ast/visitor.h"
 #include "ast/node.h"
 
 namespace Util
 {
-	class Stringifier : public Visitor
+	class TreePrinter : public Visitor
 	{
 	public:
-		std::string stringify(Node &node);
-
 		// main
 		void visit(Program &node) override;
 
@@ -43,6 +41,13 @@ namespace Util
 		void visit(Type &node) override;
 
 	private:
-		std::stringstream value;
+		Stringifier str;
+		unsigned tab_level = 1;
+
+		template<typename... Args>
+		inline void print(Args &&... args) const
+		{
+			Logger::get().debug(std::string(3 * tab_level, ' '), std::forward<Args>(args)...);
+		}
 	};
 }

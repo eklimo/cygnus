@@ -39,7 +39,7 @@ namespace Util
 		constexpr int radius = 1;
 		const char pointer_char = '^';
 
-		unsigned error_line_index = -1;
+		unsigned error_line_index = 0;
 
 		// get lines
 		stream << source.data();
@@ -49,14 +49,15 @@ namespace Util
 			unsigned n = 0, m = 0;
 			while(std::getline(stream, line))
 			{
+				// standardize tab size
+				line  = std::regex_replace(line, std::regex("\\t"), std::string(4, ' '));
 				if((n + radius + 1 >= begin.line) && (n <= begin.line + radius - 1))
 				{
-					// standardize tab size
-					lines.push_back(std::regex_replace(line, std::regex("\\t"), std::string(4, ' ')));
+					lines.push_back(line);
 					if(n == begin.line - 1)
 					{
 						error_line_index = m;
-						if(end.column > line.length() + 1)
+						if(end.column > line.length() + 2 || begin.column > line.length() + 1)
 							throw std::out_of_range("column longer than line");
 					}
 					m++;
@@ -91,7 +92,7 @@ namespace Util
 				stream << std::setw(side_width) << "";
 				stream << "\033[34m |";
 				stream << "\033[0m" << std::setw(begin.column) << "";
-				int length = begin == end ? 1 : (int)end.column - begin.column;
+				int length = (int)end.column - begin.column;
 				std::string pointer(length, pointer_char);
 				stream << "\033[1;31m" << pointer << " \033[0;31m" << what() << "\033[0m";
 			}
