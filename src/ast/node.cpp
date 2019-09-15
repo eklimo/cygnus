@@ -2,40 +2,40 @@
 
 #include "node.h"
 
-Program::Program(std::vector<std::unique_ptr<Statement>> _statements)
-	: statements(std::move(_statements))
+Program::Program(std::vector<std::unique_ptr<Statement>> statements)
+	: statements(std::move(statements))
 {
 }
 void Program::accept(Visitor &v)
 {
 	v.visit(*this);
 }
-ExprStatement::ExprStatement(std::unique_ptr<Expression> _expr)
-	: expr(std::move(_expr))
+ExprStatement::ExprStatement(std::unique_ptr<Expression> expr)
+	: expr(std::move(expr))
 {
 }
 void ExprStatement::accept(Visitor &v)
 {
 	v.visit(*this);
 }
-VariableDef::VariableDef(std::unique_ptr<Identifier> _name, std::unique_ptr<Type> _type, std::unique_ptr<Expression> _value)
-	: name(std::move(_name)), type(std::move(_type)), value(std::move(_value))
+VariableDef::VariableDef(std::unique_ptr<Identifier> name, std::unique_ptr<Type> type, std::unique_ptr<Expression> value)
+	: name(std::move(name)), type(std::move(type)), value(std::move(value))
 {
 }
 void VariableDef::accept(Visitor &v)
 {
 	v.visit(*this);
 }
-FunctionDef::FunctionDef(std::unique_ptr<Identifier> _name, std::vector<std::unique_ptr<Parameter>> _parameters, std::unique_ptr<Type> _return_type, std::unique_ptr<Block> _body)
-	: name(std::move(_name)), parameters(std::move(_parameters)), return_type(std::move(_return_type)), body(std::move(_body))
+FunctionDef::FunctionDef(std::unique_ptr<Identifier> name, std::vector<std::unique_ptr<Parameter>> parameters, std::unique_ptr<Type> return_type, std::unique_ptr<Block> body)
+	: name(std::move(name)), parameters(std::move(parameters)), return_type(std::move(return_type)), body(std::move(body))
 {
 }
 void FunctionDef::accept(Visitor &v)
 {
 	v.visit(*this);
 }
-Value::Value(Token _token)
-	: token(_token)
+Value::Value(Token token)
+	: token(token)
 {
 }
 void NumberLiteral::accept(Visitor &v)
@@ -54,68 +54,68 @@ void UnitLiteral::accept(Visitor &v)
 {
 	v.visit(*this);
 }
-Identifier::Identifier(Token token, std::shared_ptr<SymbolData> _symbol)
-	: Value(token), symbol(_symbol)
+Identifier::Identifier(Token token, std::shared_ptr<SymbolData> symbol)
+	: Value(token), symbol(symbol)
 {
 }
 void Identifier::accept(Visitor &v)
 {
 	v.visit(*this);
 }
-FunctionCall::FunctionCall(std::unique_ptr<Identifier> _name, std::vector<std::unique_ptr<Expression>> _arguments)
-	: name(std::move(_name)), arguments(std::move(_arguments))
+FunctionCall::FunctionCall(std::unique_ptr<Identifier> name, std::vector<std::unique_ptr<Expression>> arguments)
+	: name(std::move(name)), arguments(std::move(arguments))
 {
 }
 void FunctionCall::accept(Visitor &v)
 {
 	v.visit(*this);
 }
-Operator::Operator(Token _token)
-	: token(_token)
+Operator::Operator(Token token)
+	: token(token)
 {
 }
-InfixOperator::InfixOperator(Token token, std::unique_ptr<Expression> _left, std::unique_ptr<Expression> _right)
-	: Operator(token), left(std::move(_left)), right(std::move(_right))
+InfixOperator::InfixOperator(Token token, std::unique_ptr<Expression> left, std::unique_ptr<Expression> right)
+	: Operator(token), left(std::move(left)), right(std::move(right))
 {
 }
 void InfixOperator::accept(Visitor &v)
 {
 	v.visit(*this);
 }
-PrefixOperator::PrefixOperator(Token token, std::unique_ptr<Expression> _operand)
-	: Operator(token), operand(std::move(_operand))
+PrefixOperator::PrefixOperator(Token token, std::unique_ptr<Expression> operand)
+	: Operator(token), operand(std::move(operand))
 {
 }
 void PrefixOperator::accept(Visitor &v)
 {
 	v.visit(*this);
 }
-PostfixOperator::PostfixOperator(Token token, std::unique_ptr<Expression> _operand)
-	: Operator(token), operand(std::move(_operand))
+PostfixOperator::PostfixOperator(Token token, std::unique_ptr<Expression> operand)
+	: Operator(token), operand(std::move(operand))
 {
 }
 void PostfixOperator::accept(Visitor &v)
 {
 	v.visit(*this);
 }
-ReturnExpr::ReturnExpr(std::unique_ptr<Expression> _value)
-	: value(std::move(_value))
+ReturnExpr::ReturnExpr(std::unique_ptr<Expression> value)
+	: value(std::move(value))
 {
 }
 void ReturnExpr::accept(Visitor &v)
 {
 	v.visit(*this);
 }
-IfExpr::IfExpr(std::unique_ptr<Expression> _condition, std::unique_ptr<Block> _if_branch, std::unique_ptr<Block> _else_branch)
-	: condition(std::move(_condition)), if_branch(std::move(_if_branch)), else_branch(std::move(_else_branch))
+IfExpr::IfExpr(std::unique_ptr<Expression> condition, std::unique_ptr<Block> if_branch, std::unique_ptr<Block> else_branch)
+	: condition(std::move(condition)), if_branch(std::move(if_branch)), else_branch(std::move(else_branch))
 {
 }
 void IfExpr::accept(Visitor &v)
 {
 	v.visit(*this);
 }
-WhileExpr::WhileExpr(std::unique_ptr<Expression> _condition, std::unique_ptr<Block> _body)
-	: condition(std::move(_condition)), body(std::move(_body))
+WhileExpr::WhileExpr(std::unique_ptr<Expression> condition, std::unique_ptr<Block> body)
+	: condition(std::move(condition)), body(std::move(body))
 {
 }
 void WhileExpr::accept(Visitor &v)
@@ -126,24 +126,24 @@ void Invalid::accept(Visitor &v)
 {
 	v.visit(*this);
 }
-Block::Block(std::vector<std::unique_ptr<Statement>> _statements)
-	: statements(std::move(_statements))
+Block::Block(std::vector<std::unique_ptr<Statement>> statements)
+	: statements(std::move(statements))
 {
 }
 void Block::accept(Visitor &v)
 {
 	v.visit(*this);
 }
-Parameter::Parameter(std::unique_ptr<Identifier> _name, std::unique_ptr<Type> _type)
-	: name(std::move(_name)), type(std::move(_type))
+Parameter::Parameter(std::unique_ptr<Identifier> name, std::unique_ptr<Type> type)
+	: name(std::move(name)), type(std::move(type))
 {
 }
 void Parameter::accept(Visitor &v)
 {
 	v.visit(*this);
 }
-Type::Type(Token _token)
-	: token(_token)
+Type::Type(Token token)
+	: token(token)
 {
 }
 void Type::accept(Visitor &v)
