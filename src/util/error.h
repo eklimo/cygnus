@@ -3,6 +3,8 @@
 #include <exception>
 #include <sstream>
 #include <string_view>
+#include <vector>
+#include <unordered_map>
 
 #include "util.h"
 #include "syntax/token.h"
@@ -55,25 +57,27 @@ namespace Util
 		}
 
 		template<typename... Args>
-		Error(FileLocation _begin, FileLocation _end, Args &&... args)
-			:  std::runtime_error(""),
-			   begin(_begin),
-			   end(_end)
+		Error(FileLocation begin, FileLocation end, Args &&... args)
+			: std::runtime_error(""),
+			  begin(begin),
+			  end(end)
 		{
 			(message << ... << args);
 		}
 
 		template<typename... Args>
-		Error(FileLocation _begin, Args &&... args)
-			: Error(_begin,
+		Error(FileLocation begin, Args &&... args)
+			: std::runtime_error(""),
+			  begin(begin),
+			  end({ begin.line, begin.column + 1 })
 		{
-			.line = _begin.line,
-			.column = _begin.column + 1
-		}, std::forward<Args>(args)...)
-		{
+			(message << ... << args);
 		}
 
-		Error();
+		Error()
+			: std::runtime_error("")
+		{
+		}
 
 		std::string what() noexcept;
 
@@ -81,5 +85,24 @@ namespace Util
 	private:
 		const FileLocation begin, end;
 		std::stringstream message;
+
+		unsigned min_line_index,
+		         max_line_index;
+		std::unordered_map<unsigned, std::pair<std::string, std::string>> modifiers;
+
+		std::vector<std::string> get_relevant_lines(std::string_view source, unsigned &min, unsigned &max);
+		template<typename... Args>
+		void add_modifier(std::unordered_map<unsigned, std::pair<std::string, std::string>> &modifiers, size_t i, const char *prefix, Args &&... args)
+		{
+			std::stringstream stream;
+			(stream << ... << args);
+			modifiers[i] = {prefix, stream.str()};
+		}
+
+		void format_single(std::stringstream &stream, const std::string &line, size_t i);
+		void format_multi_start(std::stringstream &stream, const std::string &line, size_t i);
+		void format_multi_mid(std::stringstream &stream, const std::string &line, size_t i);
+		void format_multi_end(std::stringstream &stream, const std::string &line, size_t i);
+		void format_line_numbers(std::stringstream &stream, std::vector<std::string> &lines, unsigned side_width);
 	};
 }

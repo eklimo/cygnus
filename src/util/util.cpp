@@ -16,8 +16,8 @@ namespace Util
 		return buffer.str();
 	}
 
-	FileLocation::FileLocation(unsigned _line, unsigned _column)
-		: line(_line), column(_column)
+	FileLocation::FileLocation(unsigned line, unsigned column)
+		: line(line), column(column)
 	{
 	}
 
