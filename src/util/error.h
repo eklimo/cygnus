@@ -99,10 +99,16 @@ namespace Util
 			modifiers[i] = {prefix, stream.str()};
 		}
 
-		void format_single(std::stringstream &stream, const std::string &line, size_t i);
-		void format_multi_start(std::stringstream &stream, const std::string &line, size_t i);
-		void format_multi_mid(std::stringstream &stream, const std::string &line, size_t i);
-		void format_multi_end(std::stringstream &stream, const std::string &line, size_t i);
-		void format_line_numbers(std::stringstream &stream, std::vector<std::string> &lines, unsigned side_width);
+		void format_single(std::vector<std::string> &lines);
+		void format_single_error(std::stringstream &stream, const std::string &line, size_t i, unsigned shift_length);
+		void format_single_normal(std::stringstream &stream, const std::string &line, size_t i, unsigned shift_length);
+
+		void format_multi(std::vector<std::string> &lines);
+		void format_multi_start(std::stringstream &stream, const std::string &line, size_t i, unsigned shift_length);
+		void format_multi_mid(std::stringstream &stream, const std::string &line, size_t i, unsigned shift_length);
+		void format_multi_end(std::stringstream &stream, const std::string &line, size_t i, unsigned shift_length);
+		void format_multi_normal(std::stringstream &stream, const std::string &line, size_t i, unsigned shift_length);
+
+		void format_line_numbers(std::vector<std::string> &lines);
 	};
 }
