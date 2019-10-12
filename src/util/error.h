@@ -1,13 +1,15 @@
 #pragma once
 
+#include "util.h"
+#include "syntax/token.h"
+#include "ast/node.h"
+#include "util/noderange.h"
+
 #include <exception>
 #include <sstream>
 #include <string_view>
 #include <vector>
 #include <unordered_map>
-
-#include "util.h"
-#include "syntax/token.h"
 
 using Util::FileLocation;
 
@@ -16,6 +18,16 @@ namespace Util
 	class Error : public std::runtime_error
 	{
 	public:
+		template<typename... Args>
+		Error(Node *const node, Args &&... args)
+			: std::runtime_error(""),
+			  range(NodeRange(node)),
+			  begin(range.begin),
+			  end(range.end)
+		{
+			(message << ... << args);
+		}
+
 		template<typename... Args>
 		static Error At(const Token &token, Args &&... args)
 		{
@@ -83,6 +95,7 @@ namespace Util
 
 		void print(std::string_view file, std::string_view source);
 	private:
+		NodeRange range;
 		const FileLocation begin, end;
 		std::stringstream message;
 

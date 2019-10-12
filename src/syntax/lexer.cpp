@@ -1,9 +1,9 @@
 #include "lexer.h"
 
-#include <cctype>
-
 #include "util/error.h"
 #include "lang.h"
+
+#include <cctype>
 
 Lexer::Lexer(std::string_view file, std::string_view source)
 	: file(file),
@@ -92,7 +92,12 @@ Token Lexer::tokenize_operator_separator(std::string_view::const_iterator &it, s
 		}
 	}
 
-	return Token();
+	return
+	{
+		.type = TokenType::Invalid,
+		.value = it,
+		.location = { line, column }
+	};
 }
 
 Token Lexer::tokenize_number_literal(std::string_view::const_iterator &it, std::string_view::const_iterator end, unsigned &line, unsigned &column)
@@ -253,8 +258,8 @@ std::vector<Token> Lexer::tokenize()
 		{
 			error = true;
 			Util::Error(
-				{ line, column },
-				"unexpected symbol '", *it, "'"
+			{ line, column },
+			"unexpected symbol '", *it, "'"
 			).print(file, source);
 		}
 	}

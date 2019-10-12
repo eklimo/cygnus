@@ -33,6 +33,8 @@ constexpr const char *type_to_string(TokenType type)
 			return "opr";
 		case TokenType::Separator:
 			return "sep";
+		default:
+			return "";
 	}
 }
 

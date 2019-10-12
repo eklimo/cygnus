@@ -20,9 +20,9 @@ private:
 
 	DataType type;
 	DataType get_type(Node &node);
-	DataType check_infix(const Token &token, const Expression *const left, const DataType &left_type, const Expression *const right, const DataType &right_type);
-	DataType check_prefix(const Token &token, const Expression *const operand, const DataType &operand_type);
-	DataType check_postfix(const Token &token, const Expression *const operand, const DataType &operand_type);
+	DataType check_infix(InfixOperator *const op, Expression *const left, const DataType &left_type, Expression *const right, const DataType &right_type);
+	DataType check_prefix(PrefixOperator *const op, Expression *const operand, const DataType &operand_type);
+	DataType check_postfix(PostfixOperator *const op, Expression *const operand, const DataType &operand_type);
 
 	Util::Stringifier str;
 	unsigned tab_level = 0;

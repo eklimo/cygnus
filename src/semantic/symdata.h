@@ -1,11 +1,10 @@
 #pragma once
 
-#include <memory>
-
 // #include "ast/node.h"
 class Node;
-
 #include "semantic/type.h"
+
+#include <memory>
 
 struct SymbolData
 {

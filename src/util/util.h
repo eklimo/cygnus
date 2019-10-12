@@ -11,11 +11,15 @@ namespace Util
 	{
 		FileLocation(unsigned line = 0, unsigned column = 0);
 
-		const unsigned line;
-		const unsigned column;
+		unsigned line;
+		unsigned column;
 
 		bool operator==(const FileLocation &rhs) const;
 		bool operator!=(const FileLocation &rhs) const;
+		bool operator>(const FileLocation &rhs) const;
+		bool operator>=(const FileLocation &rhs) const;
+		bool operator<(const FileLocation &rhs) const;
+		bool operator<=(const FileLocation &rhs) const;
 
 		friend std::ostream &operator<<(std::ostream &stream, const FileLocation &loc);
 	};

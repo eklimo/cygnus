@@ -1,7 +1,8 @@
-#include <vector>
-#include <string_view>
 
 #include "cli.h"
+
+#include <vector>
+#include <string_view>
 
 int main(int argc, char *argv[])
 {

@@ -24,25 +24,25 @@ DataType TypeChecker::get_type(Node &node)
 	return temp;
 }
 
-DataType TypeChecker::check_infix(const Token &token, const Expression *const left, const DataType &left_type, const Expression *const right, const DataType &right_type)
+DataType TypeChecker::check_infix(InfixOperator *const op, Expression *const left, const DataType &left_type, Expression *const right, const DataType &right_type)
 {
-	auto op = token.value;
+	auto sym = op->token.value;
 
-	if(Lang::is_arithmetic(op))
+	if(Lang::is_arithmetic(sym))
 	{
 		if(left_type == right_type && right_type == DataType::Integer)
 			return DataType::Integer;
-		else if(left_type == DataType::String || right_type == DataType::String)
+		else if(sym == "+" && (left_type == DataType::String || right_type == DataType::String))
 			return DataType::String;
 	}
-	else if(Lang::is_assignment(op))
+	else if(Lang::is_assignment(sym))
 	{
 		if(!dynamic_cast<const Identifier *>(left))
 		{
 			error = true;
-			Util::Error::At(
-			    token,
-			    "left-hand expression must be assignable"
+			Util::Error(
+			    left,
+			    "left-hand expression is not assignable"
 			).print(file, source);
 			return DataType::Invalid;
 		}
@@ -50,13 +50,13 @@ DataType TypeChecker::check_infix(const Token &token, const Expression *const le
 		if(left_type == right_type)
 			return left_type;
 	}
-	else if(Lang::is_boolean_op(op))
+	else if(Lang::is_boolean_op(sym))
 	{
 		if(left_type == right_type)
 		{
-			if(token.value == "==" || token.value == "!=")
+			if(sym == "==" || sym == "!=")
 				return DataType::Boolean;
-			else if(right_type == DataType::Integer && (token.value == ">" || token.value == ">=" || token.value == "<" || token.value == "<="))
+			else if(right_type == DataType::Integer && (sym == ">" || sym == ">=" || sym == "<" || sym == "<="))
 				return DataType::Boolean;
 			else if(right_type == DataType::Boolean)
 				return DataType::Boolean;
@@ -66,26 +66,26 @@ DataType TypeChecker::check_infix(const Token &token, const Expression *const le
 	if(left_type != DataType::Invalid && right_type != DataType::Invalid)
 	{
 		error = true;
-		Util::Error::At(
-		    token,
+		Util::Error(
+		    op,
 		    "mismatched types '", left_type,
 		    "' and '", right_type,
-		    "' for operator '", token.value, "'"
+		    "' for operator '", sym, "'"
 		).print(file, source);
 	}
 	return DataType::Invalid;
 }
 
-DataType TypeChecker::check_prefix(const Token &token, const Expression *const operand, const DataType &operand_type)
+DataType TypeChecker::check_prefix(PrefixOperator *const op, Expression *const operand, const DataType &operand_type)
 {
-	auto op = token.value;
+	auto sym = op->token.value;
 
-	if(Lang::is_arithmetic(op))
+	if(Lang::is_arithmetic(sym))
 	{
 		if(operand_type == DataType::Integer)
 			return operand_type;
 	}
-	else if(Lang::is_boolean_op(op))
+	else if(Lang::is_boolean_op(sym))
 	{
 		if(operand_type == DataType::Boolean)
 			return operand_type;
@@ -94,20 +94,20 @@ DataType TypeChecker::check_prefix(const Token &token, const Expression *const o
 	if(operand_type != DataType::Invalid)
 	{
 		error = true;
-		Util::Error::At(
-		    token,
+		Util::Error(
+		    op,
 		    "mismatched type '", operand_type,
-		    "' for operator '", token.value, "'"
+		    "' for operator '", sym, "'"
 		).print(file, source);
 	}
 	return DataType::Invalid;
 }
 
-DataType TypeChecker::check_postfix(const Token &token, const Expression *const operand, const DataType &operand_type)
+DataType TypeChecker::check_postfix(PostfixOperator *const op, Expression *const operand, const DataType &operand_type)
 {
-	auto op = token.value;
+	auto sym = op->token.value;
 
-	if(Lang::is_arithmetic(op))
+	if(Lang::is_arithmetic(sym))
 	{
 		if(operand_type == DataType::Integer)
 			return operand_type;
@@ -116,10 +116,10 @@ DataType TypeChecker::check_postfix(const Token &token, const Expression *const 
 	if(operand_type != DataType::Invalid)
 	{
 		error = true;
-		Util::Error::At(
-		    token,
+		Util::Error(
+		    op,
 		    "mismatched type '", operand_type,
-		    "' for operator '", token.value, "'"
+		    "' for operator '", sym, "'"
 		).print(file, source);
 	}
 	return DataType::Invalid;
@@ -163,8 +163,8 @@ void TypeChecker::visit(VariableDef &node)
 		if(variable_type != DataType::Invalid && inferred_type != DataType::Invalid && variable_type != inferred_type)
 		{
 			error = true;
-			Util::Error::At(
-			    node.name->token,
+			Util::Error(
+			    node.name.get(),
 			    "inferred type '", inferred_type,
 			    "' does not match explicit type '", variable_type, "'"
 			).print(file, source);
@@ -227,8 +227,8 @@ void TypeChecker::visit(FunctionDef &node)
 	if(body_return_type != DataType::Invalid && return_type != DataType::Invalid && body_return_type != return_type)
 	{
 		error = true;
-		Util::Error::At(
-		    node.name->token,
+		Util::Error(
+		    node.name.get(),
 		    "body return type '", body_return_type,
 		    "' does not match signature return type '", return_type, "'"
 		).print(file, source);
@@ -241,7 +241,6 @@ void TypeChecker::visit(FunctionDef &node)
 }
 
 // expressions
-#include "util/stringifier.h"
 void TypeChecker::visit(NumberLiteral &node)
 {
 	type = DataType::Integer;
@@ -297,8 +296,8 @@ void TypeChecker::visit(FunctionCall &node)
 		type = DataType::Invalid;
 
 		error = true;
-		Util::Error::At(
-		    node.name->token,
+		Util::Error(
+		    node.name.get(),
 		    "call to non-function type '", node.name->token.value, "'"
 		).print(file, source);
 	}
@@ -307,8 +306,8 @@ void TypeChecker::visit(FunctionCall &node)
 		if(node.arguments.size() != signature.parameter_types.size())
 		{
 			error = true;
-			Util::Error::At(
-			    node.name->token,
+			Util::Error(
+			    &node,
 			    "mismatched number of arguments to '", node.name->token.value,
 			    "': expected ", signature.parameter_types.size(),
 			    ", found ", node.arguments.size()
@@ -323,8 +322,8 @@ void TypeChecker::visit(FunctionCall &node)
 			if(arg != DataType::Invalid && param != DataType::Invalid && arg != param)
 			{
 				error = true;
-				Util::Error::At(
-				    node.name->token,
+				Util::Error(
+				    node.arguments[i].get(),
 				    "mismatched argument types for '", node.name->token.value,
 				    "': expected '", param,
 				    "', found '", arg, "'"
@@ -347,7 +346,7 @@ void TypeChecker::visit(InfixOperator &node)
 	auto left_type = get_type(*node.left);
 	auto right_type = get_type(*node.right);
 
-	type = check_infix(node.token, node.left.get(), left_type, node.right.get(), right_type);
+	type = check_infix(&node, node.left.get(), left_type, node.right.get(), right_type);
 
 	tab_level--;
 	print(": ", type);
@@ -358,7 +357,7 @@ void TypeChecker::visit(PrefixOperator &node)
 	tab_level++;
 
 	auto operand_type = get_type(*node.operand);
-	type = check_prefix(node.token, node.operand.get(), operand_type);
+	type = check_prefix(&node, node.operand.get(), operand_type);
 
 	tab_level--;
 	print(": ", type);
@@ -370,10 +369,20 @@ void TypeChecker::visit(PostfixOperator &node)
 	tab_level++;
 
 	auto operand_type = get_type(*node.operand);
-	type = check_postfix(node.token, node.operand.get(), operand_type);
+	type = check_postfix(&node, node.operand.get(), operand_type);
 
 	tab_level--;
 	print(": ", type);
+}
+void TypeChecker::visit(GroupExpr &node)
+{
+	// print(str.stringify(node));
+	// tab_level++;
+
+	type = get_type(*node.expr);
+
+	// tab_level--;
+	// print(": ", type);
 }
 void TypeChecker::visit(ReturnExpr &node)
 {
@@ -393,12 +402,14 @@ void TypeChecker::visit(IfExpr &node)
 	tab_level++;
 
 	auto condition_type = get_type(*node.condition);
-	if(condition_type != DataType::Boolean)
+	if(condition_type != DataType::Invalid && condition_type != DataType::Boolean)
 	{
 		error = true;
 		Util::Error(
-		{1, 1},
-		"mismatched type '", condition_type, "' for condition"
+		    node.condition.get(),
+		    "mismatched type for condition",
+		    ": expected '", DataType::Boolean,
+		    "', found '", condition_type, "'"
 		).print(file, source);
 	}
 
@@ -413,10 +424,10 @@ void TypeChecker::visit(IfExpr &node)
 			_type = DataType::Invalid;
 			error = true;
 			Util::Error(
-			{1, 1},
-			"mismatched types '", if_type,
-			"' and '", else_type,
-			"' for if/else branches"
+			    &node,
+			    "mismatched types '", if_type,
+			    "' and '", else_type,
+			    "' for if/else branches"
 			).print(file, source);
 		}
 	}
@@ -431,14 +442,15 @@ void TypeChecker::visit(WhileExpr &node)
 	print(str.stringify(node));
 	tab_level++;
 
-	auto condition = get_type(*node.condition);
-	if(condition != DataType::Boolean)
+	auto condition_type = get_type(*node.condition);
+	if(condition_type != DataType::Invalid && condition_type != DataType::Boolean)
 	{
 		error = true;
 		Util::Error(
-		{1, 1},
-		"mismatched type '", condition,
-		"' for condition"
+		    node.condition.get(),
+		    "mismatched type for condition",
+		    ": expected '", DataType::Boolean,
+		    "', found '", condition_type, "'"
 		).print(file, source);
 	}
 
@@ -516,8 +528,8 @@ void TypeChecker::visit(Type &node)
 		type = DataType::Invalid;
 
 		error = true;
-		Util::Error::At(
-		    node.token,
+		Util::Error(
+		    &node,
 		    "invalid type '", node.token.value, "'"
 		).print(file, source);
 	}

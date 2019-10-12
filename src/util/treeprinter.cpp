@@ -101,6 +101,13 @@ namespace Util
 		node.operand->accept(*this);
 		tab_level--;
 	}
+	void TreePrinter::visit(GroupExpr &node)
+	{
+		// print(str.stringify(node));
+		// tab_level++;
+		node.expr->accept(*this);
+		// tab_level--;
+	}
 	void TreePrinter::visit(ReturnExpr &node)
 	{
 		print(str.stringify(node));

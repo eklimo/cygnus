@@ -2,13 +2,13 @@
 
 #pragma once
 
-#include <string_view>
-#include <memory>
-#include <vector>
-
 #include "visitor.h"
 #include "syntax/token.h"
 #include "semantic/symdata.h"
+
+#include <string_view>
+#include <memory>
+#include <vector>
 
 struct Node
 {
@@ -88,7 +88,8 @@ struct FunctionCall : public Expression
 {
 	std::unique_ptr<Identifier> name;
 	std::vector<std::unique_ptr<Expression>> arguments;
-	FunctionCall(std::unique_ptr<Identifier> name, std::vector<std::unique_ptr<Expression>> arguments);
+	Token rparen;
+	FunctionCall(std::unique_ptr<Identifier> name, std::vector<std::unique_ptr<Expression>> arguments, Token rparen);
 	void accept(Visitor &v) override;
 };
 struct Operator : public Expression
@@ -115,25 +116,37 @@ struct PostfixOperator : public Operator
 	PostfixOperator(Token token, std::unique_ptr<Expression> operand);
 	void accept(Visitor &v) override;
 };
+struct GroupExpr : public Expression
+{
+	Token lparen;
+	std::unique_ptr<Expression> expr;
+	Token rparen;
+	GroupExpr(Token lparen, std::unique_ptr<Expression> expr, Token rparen);
+	void accept(Visitor &v) override;
+};
 struct ReturnExpr : public Expression
 {
+	Token return_keyword;
 	std::unique_ptr<Expression> value;
-	ReturnExpr(std::unique_ptr<Expression> value);
+	ReturnExpr(Token return_keyword, std::unique_ptr<Expression> value);
 	void accept(Visitor &v) override;
 };
 struct IfExpr : public Expression
 {
+	Token if_keyword;
 	std::unique_ptr<Expression> condition;
 	std::unique_ptr<Block> if_branch;
+	Token else_keyword;
 	std::unique_ptr<Block> else_branch;
-	IfExpr(std::unique_ptr<Expression> condition, std::unique_ptr<Block> if_branch, std::unique_ptr<Block> else_branch);
+	IfExpr(Token if_keyword, std::unique_ptr<Expression> condition, std::unique_ptr<Block> if_branch, Token else_keyword, std::unique_ptr<Block> else_branch);
 	void accept(Visitor &v) override;
 };
 struct WhileExpr : public Expression
 {
+	Token while_keyword;
 	std::unique_ptr<Expression> condition;
 	std::unique_ptr<Block> body;
-	WhileExpr(std::unique_ptr<Expression> condition, std::unique_ptr<Block> body);
+	WhileExpr(Token while_keyword, std::unique_ptr<Expression> condition, std::unique_ptr<Block> body);
 	void accept(Visitor &v) override;
 };
 struct Invalid : public Node
@@ -142,8 +155,10 @@ struct Invalid : public Node
 };
 struct Block : public Statement
 {
+	Token lbrace;
 	std::vector<std::unique_ptr<Statement>> statements;
-	Block(std::vector<std::unique_ptr<Statement>> statements);
+	Token rbrace;
+	Block(Token lbrace, std::vector<std::unique_ptr<Statement>> statements, Token rbrace);
 	void accept(Visitor &v) override;
 };
 struct Parameter : public Node

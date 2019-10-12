@@ -1,13 +1,13 @@
 #pragma once
 
-#include <unordered_map>
-#include <memory>
-
 #include "log.h"
 #include "util/stringifier.h"
 #include "ast/visitor.h"
 #include "ast/node.h"
 #include "symdata.h"
+
+#include <unordered_map>
+#include <memory>
 
 class SymbolTable : public Visitor
 {

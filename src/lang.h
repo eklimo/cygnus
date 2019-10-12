@@ -1,8 +1,8 @@
 #pragma once
 
-#include <string_view>
-
 #include "syntax/token.h"
+
+#include <string_view>
 
 namespace Lang
 {

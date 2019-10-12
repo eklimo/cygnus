@@ -61,11 +61,11 @@ private:
 	}
 
 	template<typename... Args>
-	void log(LogLevel _level, Args &&... args) const
+	void log(LogLevel level, Args &&... args) const
 	{
-		if(level <= _level)
+		if(this->level <= level)
 		{
-			std::cout << prefix(_level);
+			std::cout << prefix(level);
 			// ((std::cout << args << " "), ...) << std::endl;
 			(std::cout << ... << args) << "\033[0m" << std::endl;
 		}

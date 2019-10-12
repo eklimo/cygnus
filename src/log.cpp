@@ -1,10 +1,10 @@
 #include "log.h"
 
-Logger::Logger(LogLevel _level)
-	: level(_level)
+Logger::Logger(LogLevel level)
+	: level(level)
 {}
 
-void Logger::set_level(LogLevel _level)
+void Logger::set_level(LogLevel level)
 {
-	level = _level;
+	this->level = level;
 }

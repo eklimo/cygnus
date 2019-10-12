@@ -43,6 +43,7 @@ FunctionCall : Expression
 {
 	std::unique_ptr<Identifier> name
 	std::vector<std::unique_ptr<Expression>> arguments
+	Token rparen
 };
 abstract Operator : Expression
 {
@@ -61,18 +62,28 @@ PostfixOperator : Operator
 {
 	std::unique_ptr<Expression> operand
 };
+GroupExpr : Expression
+{
+	Token lparen
+	std::unique_ptr<Expression> expr
+	Token rparen
+};
 ReturnExpr : Expression
 {
+	Token return_keyword
 	std::unique_ptr<Expression> value
 };
 IfExpr : Expression
 {
+	Token if_keyword
 	std::unique_ptr<Expression> condition
 	std::unique_ptr<Block> if_branch
+	Token else_keyword
 	std::unique_ptr<Block> else_branch
 };
 WhileExpr : Expression
 {
+	Token while_keyword
 	std::unique_ptr<Expression> condition
 	std::unique_ptr<Block> body
 };
@@ -80,7 +91,9 @@ WhileExpr : Expression
 Invalid : Node;
 Block : Statement
 {
+	Token lbrace
 	std::vector<std::unique_ptr<Statement>> statements
+	Token rbrace
 };
 Parameter : Node
 {

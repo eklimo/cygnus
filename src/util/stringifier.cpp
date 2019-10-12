@@ -70,6 +70,10 @@ namespace Util
 	{
 		value << "Postfix operator '" << node.token.value << "'";
 	}
+	void Stringifier::visit(GroupExpr &node)
+	{
+		value << "Group expression";
+	}
 	void Stringifier::visit(ReturnExpr &node)
 	{
 		value << "Return expression";

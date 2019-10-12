@@ -62,8 +62,8 @@ void Identifier::accept(Visitor &v)
 {
 	v.visit(*this);
 }
-FunctionCall::FunctionCall(std::unique_ptr<Identifier> name, std::vector<std::unique_ptr<Expression>> arguments)
-	: name(std::move(name)), arguments(std::move(arguments))
+FunctionCall::FunctionCall(std::unique_ptr<Identifier> name, std::vector<std::unique_ptr<Expression>> arguments, Token rparen)
+	: name(std::move(name)), arguments(std::move(arguments)), rparen(rparen)
 {
 }
 void FunctionCall::accept(Visitor &v)
@@ -98,24 +98,32 @@ void PostfixOperator::accept(Visitor &v)
 {
 	v.visit(*this);
 }
-ReturnExpr::ReturnExpr(std::unique_ptr<Expression> value)
-	: value(std::move(value))
+GroupExpr::GroupExpr(Token lparen, std::unique_ptr<Expression> expr, Token rparen)
+	: lparen(lparen), expr(std::move(expr)), rparen(rparen)
+{
+}
+void GroupExpr::accept(Visitor &v)
+{
+	v.visit(*this);
+}
+ReturnExpr::ReturnExpr(Token return_keyword, std::unique_ptr<Expression> value)
+	: return_keyword(return_keyword), value(std::move(value))
 {
 }
 void ReturnExpr::accept(Visitor &v)
 {
 	v.visit(*this);
 }
-IfExpr::IfExpr(std::unique_ptr<Expression> condition, std::unique_ptr<Block> if_branch, std::unique_ptr<Block> else_branch)
-	: condition(std::move(condition)), if_branch(std::move(if_branch)), else_branch(std::move(else_branch))
+IfExpr::IfExpr(Token if_keyword, std::unique_ptr<Expression> condition, std::unique_ptr<Block> if_branch, Token else_keyword, std::unique_ptr<Block> else_branch)
+	: if_keyword(if_keyword), condition(std::move(condition)), if_branch(std::move(if_branch)), else_keyword(else_keyword), else_branch(std::move(else_branch))
 {
 }
 void IfExpr::accept(Visitor &v)
 {
 	v.visit(*this);
 }
-WhileExpr::WhileExpr(std::unique_ptr<Expression> condition, std::unique_ptr<Block> body)
-	: condition(std::move(condition)), body(std::move(body))
+WhileExpr::WhileExpr(Token while_keyword, std::unique_ptr<Expression> condition, std::unique_ptr<Block> body)
+	: while_keyword(while_keyword), condition(std::move(condition)), body(std::move(body))
 {
 }
 void WhileExpr::accept(Visitor &v)
@@ -126,8 +134,8 @@ void Invalid::accept(Visitor &v)
 {
 	v.visit(*this);
 }
-Block::Block(std::vector<std::unique_ptr<Statement>> statements)
-	: statements(std::move(statements))
+Block::Block(Token lbrace, std::vector<std::unique_ptr<Statement>> statements, Token rbrace)
+	: lbrace(lbrace), statements(std::move(statements)), rbrace(rbrace)
 {
 }
 void Block::accept(Visitor &v)

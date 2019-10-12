@@ -1,11 +1,11 @@
 #pragma once
 
-#include <string>
-#include <sstream>
-
 #include "log.h"
 #include "ast/visitor.h"
 #include "ast/node.h"
+
+#include <string>
+#include <sstream>
 
 namespace Util
 {

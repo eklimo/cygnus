@@ -1,8 +1,8 @@
 #include "parser.h"
 
-#include <type_traits>
-
 #include "lang.h"
+
+#include <type_traits>
 
 using Util::Error;
 
@@ -171,6 +171,7 @@ std::unique_ptr<FunctionDef> Parser::function_def()
 
 std::unique_ptr<Expression> Parser::expression(int rbp)
 {
+	trim();
 	if(Lang::null_precedence(token()) == -1)
 		return nullptr;
 
@@ -294,22 +295,6 @@ std::unique_ptr<Expression> Parser::postfix_operator_expr(const Token &tok, std:
 	return std::make_unique<PostfixOperator>(tok, std::move(left));
 }
 
-std::unique_ptr<Expression> Parser::group_expr(const Token &tok)
-{
-	int prec = Lang::null_precedence(tok);
-
-	auto expr = expression(prec);
-	if(expr)
-	{
-		if(!match(")"))
-			expect("')'");
-
-		return expr;
-	}
-
-	return nullptr;
-}
-
 std::unique_ptr<Expression> Parser::call_expr(const Token &tok, std::unique_ptr<Expression> left)
 {
 	// prevent calls on invalid tokens
@@ -339,17 +324,35 @@ std::unique_ptr<Expression> Parser::call_expr(const Token &tok, std::unique_ptr<
 		match(",");
 	}
 
-	if(!match(")"))
+	auto rparen = match(")");
+	if(!rparen)
 		expect("')'");
 
-	return std::make_unique<FunctionCall>(cast<Expression, Identifier>(std::move(left)), std::move(arguments));
+	return std::make_unique<FunctionCall>(cast<Expression, Identifier>(std::move(left)), std::move(arguments), std::move(*rparen));
+}
+
+std::unique_ptr<Expression> Parser::group_expr(const Token &tok)
+{
+	int prec = Lang::null_precedence(tok);
+
+	auto expr = expression(prec);
+	if(expr)
+	{
+		auto rparen = match(")");
+		if(!rparen)
+			expect("')'");
+
+		return std::make_unique<GroupExpr>(tok, std::move(expr), *rparen);
+	}
+
+	return nullptr;
 }
 
 std::unique_ptr<Expression> Parser::return_expr(const Token &tok)
 {
 	auto value = expression();
 
-	return std::make_unique<ReturnExpr>(std::move(value));
+	return std::make_unique<ReturnExpr>(tok, std::move(value));
 }
 
 std::unique_ptr<Expression> Parser::if_expr(const Token &tok)
@@ -362,15 +365,16 @@ std::unique_ptr<Expression> Parser::if_expr(const Token &tok)
 	if(!if_branch)
 		expect("'{'");
 
+	auto else_keyword = match("else");
 	std::unique_ptr<Block> else_branch;
-	if(match("else"))
+	if(else_keyword)
 	{
 		else_branch = block();
 		if(!else_branch)
 			expect("'{'");
 	}
 
-	return std::make_unique<IfExpr>(std::move(condition), std::move(if_branch), std::move(else_branch));
+	return std::make_unique<IfExpr>(tok, std::move(condition), std::move(if_branch), std::move(*else_keyword), std::move(else_branch));
 }
 
 std::unique_ptr<Expression> Parser::while_expr(const Token &tok)
@@ -383,7 +387,7 @@ std::unique_ptr<Expression> Parser::while_expr(const Token &tok)
 	if(!body)
 		expect("'{'");
 
-	return std::make_unique<WhileExpr>(std::move(condition), std::move(body));
+	return std::make_unique<WhileExpr>(tok, std::move(condition), std::move(body));
 }
 
 std::unique_ptr<Expression> Parser::literal(const Token &tok)
@@ -472,14 +476,16 @@ std::vector<std::unique_ptr<Statement>> Parser::statement_list()
 
 std::unique_ptr<Block> Parser::block()
 {
-	if(match("{"))
+	auto lbrace = match("{");
+	if(lbrace)
 	{
 		auto statements = statement_list();
 
-		if(!match("}"))
+		auto rbrace = match("}");
+		if(!rbrace)
 			expect("'}'");
 
-		return std::make_unique<Block>(std::move(statements));
+		return std::make_unique<Block>(std::move(*lbrace), std::move(statements), std::move(*rbrace));
 	}
 
 	return nullptr;

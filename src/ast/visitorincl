@@ -13,6 +13,7 @@ void visit(FunctionCall &node) override;
 void visit(InfixOperator &node) override;
 void visit(PrefixOperator &node) override;
 void visit(PostfixOperator &node) override;
+void visit(GroupExpr &node) override;
 void visit(ReturnExpr &node) override;
 void visit(IfExpr &node) override;
 void visit(WhileExpr &node) override;

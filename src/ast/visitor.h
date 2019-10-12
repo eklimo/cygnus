@@ -15,6 +15,7 @@ struct FunctionCall;
 struct InfixOperator;
 struct PrefixOperator;
 struct PostfixOperator;
+struct GroupExpr;
 struct ReturnExpr;
 struct IfExpr;
 struct WhileExpr;
@@ -39,6 +40,7 @@ public:
 	virtual void visit(InfixOperator &node) = 0;
 	virtual void visit(PrefixOperator &node) = 0;
 	virtual void visit(PostfixOperator &node) = 0;
+	virtual void visit(GroupExpr &node) = 0;
 	virtual void visit(ReturnExpr &node) = 0;
 	virtual void visit(IfExpr &node) = 0;
 	virtual void visit(WhileExpr &node) = 0;

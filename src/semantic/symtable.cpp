@@ -160,6 +160,10 @@ void SymbolTable::visit(PostfixOperator &node)
 {
 	node.operand->accept(*this);
 }
+void SymbolTable::visit(GroupExpr &node)
+{
+	node.expr->accept(*this);
+}
 void SymbolTable::visit(ReturnExpr &node)
 {
 	if(node.value) node.value->accept(*this);

@@ -1,12 +1,12 @@
 #include "error.h"
 
+#include "log.h"
+
 #include <string>
 #include <iomanip>
 #include <regex>
 #include <stdexcept>
 #include <climits>
-
-#include "log.h"
 
 namespace Util
 {

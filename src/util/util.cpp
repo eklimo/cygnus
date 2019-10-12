@@ -25,10 +25,26 @@ namespace Util
 	{
 		return line == rhs.line && column == rhs.column;
 	}
-
 	bool FileLocation::operator!=(const FileLocation &rhs) const
 	{
 		return !(*this == rhs);
+	}
+
+	bool FileLocation::operator>(const FileLocation &rhs) const
+	{
+		return line > rhs.line || (line == rhs.line && column > rhs.column);
+	}
+	bool FileLocation::operator>=(const FileLocation &rhs) const
+	{
+		return line >= rhs.line || (line == rhs.line && column >= rhs.column);
+	}
+	bool FileLocation::operator<(const FileLocation &rhs) const
+	{
+		return line < rhs.line || (line == rhs.line && column < rhs.column);
+	}
+	bool FileLocation::operator<=(const FileLocation &rhs) const
+	{
+		return line <= rhs.line || (line == rhs.line && column <= rhs.column);
 	}
 
 	std::ostream &operator<<(std::ostream &stream, const FileLocation &loc)

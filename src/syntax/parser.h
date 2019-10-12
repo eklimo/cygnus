@@ -1,13 +1,13 @@
 #pragma once
 
+#include "util/error.h"
+#include "ast/node.h"
+#include "token.h"
+
 #include <vector>
 #include <memory>
 #include <string_view>
 #include <optional>
-
-#include "util/error.h"
-#include "ast/node.h"
-#include "token.h"
 
 class Parser
 {

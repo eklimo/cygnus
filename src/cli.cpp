@@ -1,11 +1,11 @@
 #include "cli.h"
 
-#include <fstream>
-
 #include "log.h"
 #include "util/util.h"
 #include "util/error.h"
 #include "compiler.h"
+
+#include <fstream>
 
 namespace CLI
 {
