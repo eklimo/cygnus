@@ -60,19 +60,21 @@ namespace Util
 				// standardize tab size
 				line = std::regex_replace(line, std::regex("\\t"), std::string(4, ' '));
 
-				lines.push_back(line);
 				if(n == begin.line - 1)
 				{
 					min = m;
-					if(begin.column > line.length() + 1)
-						throw std::out_of_range("begin column longer than line");
+					// add whitespace to end
+					if(begin.column > line.length())
+						line += std::string(begin.column - line.length(), ' ');
 				}
 				if(n == end.line - 1)
 				{
 					max = m;
-					if(end.column > line.length() + 1)
-						throw std::out_of_range("end column longer than line");
+					// add whitespace to end
+					if(end.column > line.length())
+						line += std::string(end.column - line.length(), ' ');
 				}
+				lines.push_back(line);
 				m++;
 			}
 			n++;

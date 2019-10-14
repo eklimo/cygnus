@@ -448,13 +448,19 @@ std::vector<std::unique_ptr<Statement>> Parser::statement_list()
 		// semicolon separation
 		if(it->value == ";")
 		{
-			// reject semicolon at beginning and end of line
-			if((it - 1)->value != "\n" && (it + 1)->value != "\n")
-				match(";");
-			else
-				break;
-
+			auto semi = it;
+			if((it - 1)->value == "\n" || (it + 1)->value == "\n")
+			{
+				it = semi;
+				continue;
+			}
+			it++;
 			stmt = statement();
+			if(!stmt)
+			{
+				error = true;
+				Error::At(*semi, "unexpected symbol '", semi->value, "'").print(file, source);
+			}
 		}
 		// newline separation
 		else
@@ -464,7 +470,8 @@ std::vector<std::unique_ptr<Statement>> Parser::statement_list()
 			if(stmt && sep->value != "\n")
 			{
 				it = sep + 1;
-				expect("newline or ';'", false).print(file, source);
+				error = true;
+				Error::After(*sep, "expected newline or ';'").print(file, source);
 				advance();
 				stmt = panic();
 			}
