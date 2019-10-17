@@ -135,18 +135,18 @@ struct IfExpr : public Expression
 {
 	Token if_keyword;
 	std::unique_ptr<Expression> condition;
-	std::unique_ptr<Block> if_branch;
+	std::unique_ptr<Statement> if_branch;
 	Token else_keyword;
-	std::unique_ptr<Block> else_branch;
-	IfExpr(Token if_keyword, std::unique_ptr<Expression> condition, std::unique_ptr<Block> if_branch, Token else_keyword, std::unique_ptr<Block> else_branch);
+	std::unique_ptr<Statement> else_branch;
+	IfExpr(Token if_keyword, std::unique_ptr<Expression> condition, std::unique_ptr<Statement> if_branch, Token else_keyword, std::unique_ptr<Statement> else_branch);
 	void accept(Visitor &v) override;
 };
 struct WhileExpr : public Expression
 {
 	Token while_keyword;
 	std::unique_ptr<Expression> condition;
-	std::unique_ptr<Block> body;
-	WhileExpr(Token while_keyword, std::unique_ptr<Expression> condition, std::unique_ptr<Block> body);
+	std::unique_ptr<Statement> body;
+	WhileExpr(Token while_keyword, std::unique_ptr<Expression> condition, std::unique_ptr<Statement> body);
 	void accept(Visitor &v) override;
 };
 struct Invalid : public Node

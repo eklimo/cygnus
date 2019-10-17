@@ -18,12 +18,12 @@ namespace CLI
 
 	void print_help()
 	{
-		std::cout <<
-		          R"(Usage: cygnus [options] inputs...
+		Logger::get().info(
+		    R"(Usage: cygnus [options] inputs...
 Options:
   -h, --help: Print this help message
   -d, --debug: Enable debug logging messages)"
-		          << std::endl;
+		);
 	}
 
 	Options parse_options(const std::vector<std::string_view> &args)

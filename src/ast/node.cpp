@@ -114,7 +114,7 @@ void ReturnExpr::accept(Visitor &v)
 {
 	v.visit(*this);
 }
-IfExpr::IfExpr(Token if_keyword, std::unique_ptr<Expression> condition, std::unique_ptr<Block> if_branch, Token else_keyword, std::unique_ptr<Block> else_branch)
+IfExpr::IfExpr(Token if_keyword, std::unique_ptr<Expression> condition, std::unique_ptr<Statement> if_branch, Token else_keyword, std::unique_ptr<Statement> else_branch)
 	: if_keyword(if_keyword), condition(std::move(condition)), if_branch(std::move(if_branch)), else_keyword(else_keyword), else_branch(std::move(else_branch))
 {
 }
@@ -122,7 +122,7 @@ void IfExpr::accept(Visitor &v)
 {
 	v.visit(*this);
 }
-WhileExpr::WhileExpr(Token while_keyword, std::unique_ptr<Expression> condition, std::unique_ptr<Block> body)
+WhileExpr::WhileExpr(Token while_keyword, std::unique_ptr<Expression> condition, std::unique_ptr<Statement> body)
 	: while_keyword(while_keyword), condition(std::move(condition)), body(std::move(body))
 {
 }

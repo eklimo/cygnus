@@ -43,9 +43,9 @@ call-expression = IDENTIFIER "(" (expression ("," expression)*)? ")"
 
 return-expression = "return" expression?
 
-if-expression = "if" expression block ("else" block)?
+if-expression = "if" expression statement ("else" statement)?
 
-while-expression = "while" expression block
+while-expression = "while" expression statement
 
 literal = NUMBER
         | STRING
@@ -60,5 +60,6 @@ statement-list = (statement ("\n"|";" statement)*)?
 block = "{" statement-list "}"
 parameter = IDENTIFIER type-annotation
 type-annotation = ":" type
-type = IDENTIFIER | "(" ")"
+type = IDENTIFIER
+     | "(" ")"
 ```

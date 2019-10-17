@@ -361,17 +361,17 @@ std::unique_ptr<Expression> Parser::if_expr(const Token &tok)
 	if(!condition)
 		expect("expression");
 
-	auto if_branch = block();
+	auto if_branch = statement();
 	if(!if_branch)
-		expect("'{'");
+		expect("'{' or statement");
 
 	auto else_keyword = match("else");
-	std::unique_ptr<Block> else_branch;
+	std::unique_ptr<Statement> else_branch;
 	if(else_keyword)
 	{
-		else_branch = block();
+		else_branch = statement();
 		if(!else_branch)
-			expect("'{'");
+			expect("'{' or statement");
 	}
 
 	return std::make_unique<IfExpr>(tok, std::move(condition), std::move(if_branch), std::move(*else_keyword), std::move(else_branch));
@@ -383,9 +383,9 @@ std::unique_ptr<Expression> Parser::while_expr(const Token &tok)
 	if(!condition)
 		expect("expression");
 
-	auto body = block();
+	auto body = statement();
 	if(!body)
-		expect("'{'");
+		expect("'{' or statement");
 
 	return std::make_unique<WhileExpr>(tok, std::move(condition), std::move(body));
 }
